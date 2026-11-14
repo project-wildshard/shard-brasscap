@@ -1,0 +1,6 @@
+{
+  "extends": "../kit/tsconfig.json",
+  // shard-format's script admission names WebAssembly, which only the DOM lib types.
+  "compilerOptions": { "lib": ["es2024", "dom"] },
+  "include": ["*.ts"]
+}

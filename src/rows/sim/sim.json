@@ -1,0 +1,19 @@
+{
+  "sim": {
+    "bindings": [
+      {
+        "actorId": "actor.player",
+        "entity": 1106943697,
+        "kind": "server",
+        "module": "script:gate"
+      }
+    ],
+    "commandVersion": 0,
+    "fixedHz": 60,
+    "scriptTickDivisor": 2,
+    "scripts": [
+      "script:gate"
+    ],
+    "snapshotVersion": 0
+  }
+}
