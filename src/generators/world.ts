@@ -511,11 +511,17 @@ export function buildBrasscap(world: ShardWorld): void {
     }
   });
   // Sheriff Brass on the porch deck (top 0.25 m), facing the spawn: the quest giver (rows/npcs/sheriff.json, TC-B6)
+  // (panel `brasscap.sheriff`: the talk's `figure`, so the engine draws no stand-in beside him)
   world.part('folk', (part) => {
     const sheriff = cowboy(0, 0.6, Math.atan2(-1.6, 2));
     sheriff.position.y = 0.25;
     part.add(sheriff);
-  });
+  }, { panel: 'brasscap.sheriff' });
+  // the wanted poster pinned to the trail signpost (rows/npcs/poster.json; panel `brasscap.poster`, the talk's figure)
+  world.part('poster', (part) => {
+    const paper = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.7, 0.02), new THREE.MeshStandardMaterial({ color: '#e8d9b0', roughness: 0.95 }));
+    paper.position.set(-2.2, 1.2, -8.38); part.add(paper);
+  }, { panel: 'brasscap.poster' });
   // the cleanroom's player capsule starts on the porch at (-1.6, 2.6), looking down the canyon (yaw 0)
   world.spawn(-1.6, 0.35, 2.6, 0);
 }

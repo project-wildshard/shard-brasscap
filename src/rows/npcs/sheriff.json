@@ -82,6 +82,7 @@
         0.6
       ],
       "dialogue": "brasscap.sheriff",
+      "figure": "brasscap.sheriff",
       "id": "brasscap.sheriff.talk",
       "label": "Talk to Sheriff Brass",
       "radius": 2.5

@@ -25,6 +25,7 @@
         -8.5
       ],
       "dialogue": "brasscap.poster",
+      "figure": "brasscap.poster",
       "id": "brasscap.poster.talk",
       "label": "Read the wanted poster",
       "radius": 2.2
