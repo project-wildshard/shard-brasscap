@@ -8,7 +8,7 @@
 //   node kit/scripts/play-probe.mjs [--staging | --base=<url>] [--entry=select|road|both] [--layout=desktop|phone]
 //     [--do=<step>,<step>...] [--out=<dir>] [--seconds=<budget>]
 //
-// Steps: `wait:<s>`, `face:<x>,<z>`, `shot:<name>` (a screenshot), `fire[:<n>]` (left click n times, one cycle apart), `reload`, `slot:<n>` (press digit n), `use` (E),
+// Steps: `wait:<s>`, `face:<x>,<z>[,<y>]` (and pitch to height y), `shot:<name>` (a screenshot), `fire[:<n>]` (left click n times, one cycle apart), `reload`, `slot:<n>` (press digit n), `use` (E),
 // `aim:<creature kind>` (turn to face the nearest one alive), `walk:<x>,<z>` (hold W toward a point of the cell's frame),
 // `kill:<creature kind>` (walk within 25 m, aim and fire until it dies or 30 s pass), `shoot:<kind>` (aim, then fire once).
 // Default site: a local preview at http://127.0.0.1:5173 (`--base`); `--staging` is https://staging.wildshard.io. Never
@@ -143,7 +143,16 @@ async function step(page, name) {
   if (verb === 'reload') { await page.keyboard.press('KeyR'); await sleep(2500); return { verb }; }
   if (verb === 'slot') { await page.keyboard.press(`Digit${arg}`); await sleep(600); return { verb }; }
   if (verb === 'use') { await page.keyboard.press('KeyE'); await sleep(900); return { verb }; }
-  if (verb === 'face') { const [x, z] = arg.split(',').map(Number); await face(page, x, z); await sleep(400); return { verb }; }
+  if (verb === 'face') {
+    // `face:x,z,y`: also pitch to the height y (the cell's metres) from the eye
+    const [x, z, y] = arg.split(',').map(Number);
+    if (y === undefined || Number.isNaN(y)) await face(page, x, z);
+    else {
+      const eye = await page.evaluate(() => { const W = /** @type {any} */ (window).__wildshard.world; return { y: W.game.camera.matrixWorld.elements[13], ...(({ x, z }) => ({ x, z }))(W.player.position) }; });
+      await face(page, x, z, Math.atan2(y - eye.y, Math.hypot(x - eye.x, z - eye.z)));
+    }
+    await sleep(400); return { verb };
+  }
   if (verb === 'shot') { await page.screenshot({ path: join(out, `${arg}.png`) }); return { verb }; }
   if (verb === 'walk') { const [x, z] = arg.split(',').map(Number); return { verb, near: Math.round(await walk(page, x, z)) }; }
   if (verb === 'aim' || verb === 'shoot') {
