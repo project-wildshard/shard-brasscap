@@ -66,6 +66,17 @@
         "label": "Ammo box (+30 lever rounds)",
         "radius": 2.5,
         "scene": "brasscap.ammo.camp-3"
+      },
+      {
+        "at": [
+          21.5,
+          0.9,
+          -53.0
+        ],
+        "id": "brasscap.strongbox.use",
+        "label": "Open the strongbox (+30 lever rounds)",
+        "radius": 2.5,
+        "scene": "brasscap.strongbox"
       }
     ],
     "itemActions": [
@@ -103,6 +114,11 @@
         "action": 3,
         "item": "weapon.brasscap-lever",
         "scene": "brasscap.ammo.camp-3"
+      },
+      {
+        "action": 3,
+        "item": "weapon.brasscap-lever",
+        "scene": "brasscap.strongbox"
       }
     ],
     "itemFields": [

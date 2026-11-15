@@ -22,6 +22,7 @@ import loot from './rows/economy/loot.json' with { type: 'json' };
 import look from './rows/look/look.json' with { type: 'json' };
 import looks from './rows/look/materials.json' with { type: 'json' };
 import quests from './rows/quests/quests.json' with { type: 'json' };
+import poster from './rows/npcs/poster.json' with { type: 'json' };
 import sheriff from './rows/npcs/sheriff.json' with { type: 'json' };
 import clientScripts from './rows/sim/client-scripts.json' with { type: 'json' };
 import hooks from './rows/sim/hooks.json' with { type: 'json' };
@@ -49,7 +50,7 @@ const SUBJECTS = ['sources/rifle.glb', 'sources/bandit.glb', 'sources/wyrm.glb',
  */
 function gameplay(shard: Shardfile): Shardfile {
   // one file per NPC (J361): rows/npcs/<name>.json holds its dialogue and its talk target
-  const npcs = [sheriff.npc];
+  const npcs = [sheriff.npc, poster.npc];
   const targets = { ...ui.targets, panels: ui.targets.panels.filter((row) => row.panel !== 'brasscap.rack.rifle'), talks: npcs.map((npc) => npc.talk) };
   const story = { quests: { ...quests.quests, dialogue: [...quests.quests.dialogue, ...npcs.map((npc) => npc.dialogue)] } };
   const library = shard.budgets.library;

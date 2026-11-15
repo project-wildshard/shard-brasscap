@@ -18,7 +18,13 @@
       "brasscap.mesa.done",
       "brasscap.bounty.done",
       "brasscap.sheriff.met",
-      "brasscap.sheriff.reported"
+      "brasscap.sheriff.reported",
+      "brasscap.strongbox.opened",
+      "brasscap.poster.read",
+      "brasscap.camp-1.paid",
+      "brasscap.camp-2.paid",
+      "brasscap.camp-3.paid",
+      "brasscap.strongbox.paid"
     ],
     "quests": [
       {
@@ -277,8 +283,9 @@
           "fact": "brasscap.wyrm"
         },
         "startWhen": {
-          "all": [
-            "brasscap.gate.open"
+          "any": [
+            "brasscap.gate.open",
+            "brasscap.poster.read"
           ]
         },
         "steps": [
@@ -312,8 +319,103 @@
           }
         ],
         "title": "Wanted: the Dust Wyrm"
+      },
+      {
+        "completeFlag": "brasscap.strongbox.paid",
+        "id": "brasscap.strongbox",
+        "onComplete": {
+          "coins": 15
+        },
+        "steps": [
+          {
+            "done": {
+              "all": [
+                "brasscap.strongbox.opened"
+              ]
+            },
+            "id": "strongbox",
+            "objective": "Open the strongbox at camp 3"
+          }
+        ],
+        "title": "The strongbox",
+        "track": false
+      },
+      {
+        "completeFlag": "brasscap.camp-1.paid",
+        "id": "brasscap.camp-1.bounty",
+        "onComplete": {
+          "coins": 5
+        },
+        "steps": [
+          {
+            "done": {
+              "all": [
+                "dead:bandit.camp-1.1",
+                "dead:bandit.camp-1.2",
+                "dead:bandit.camp-1.3"
+              ]
+            },
+            "id": "camp-1",
+            "objective": "Clear bandit camp 1"
+          }
+        ],
+        "title": "Bounty: camp 1",
+        "track": false
+      },
+      {
+        "completeFlag": "brasscap.camp-2.paid",
+        "id": "brasscap.camp-2.bounty",
+        "onComplete": {
+          "coins": 5
+        },
+        "steps": [
+          {
+            "done": {
+              "all": [
+                "dead:bandit.camp-2.1",
+                "dead:bandit.camp-2.2",
+                "dead:bandit.camp-2.3"
+              ]
+            },
+            "id": "camp-2",
+            "objective": "Clear bandit camp 2"
+          }
+        ],
+        "title": "Bounty: camp 2",
+        "track": false
+      },
+      {
+        "completeFlag": "brasscap.camp-3.paid",
+        "id": "brasscap.camp-3.bounty",
+        "onComplete": {
+          "coins": 5
+        },
+        "steps": [
+          {
+            "done": {
+              "all": [
+                "dead:bandit.camp-3.1",
+                "dead:bandit.camp-3.2",
+                "dead:bandit.camp-3.3"
+              ]
+            },
+            "id": "camp-3",
+            "objective": "Clear bandit camp 3"
+          }
+        ],
+        "title": "Bounty: camp 3",
+        "track": false
       }
     ],
-    "triggers": []
+    "triggers": [
+      {
+        "flag": "brasscap.strongbox.opened",
+        "id": "brasscap.strongbox.near",
+        "kind": "region",
+        "radius": 1.8,
+        "x": 21.5,
+        "z": -53.0
+      }
+    ]
   }
 }

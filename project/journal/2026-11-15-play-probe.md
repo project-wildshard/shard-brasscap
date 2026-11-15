@@ -67,3 +67,13 @@ So the fixes are engine first (TC-E1a to TC-E1d), then rows.
 - He stands on the porch facing the spawn (the scene's `cowboy` figure, part `folk`). The main quest waits for his talk
   (`startWhen: brasscap.sheriff.met`; its `intro` points at him). His lines follow the quest: the offer, camp tips once
   camp 1 falls, and his thanks once the Dust Wyrm is dead (that choice sets `brasscap.sheriff.reported`).
+
+## TC-B7a: stuff in the world (opus-brassgun2, 2026-11-15)
+
+- A strongbox at camp 3 (the crate at 21.5, -53): its prompt restocks 30 lever rounds; walking up to it the first time
+  pays 15 coins (a region trigger and an untracked quest, so the coins are per player, J361).
+- A wanted poster on the trail signpost (`rows/npcs/poster.json`, a one-node dialogue): reading it starts the Dust Wyrm
+  bounty early (the gate's opening still starts it too).
+- Each camp pays a 5-coin bounty when its third bandit falls (untracked quests).
+- Still open (TC-B7b): the lever by the gate and a moving side door. A mover row needs a baked hinge module
+  (`MoverBakeSchema`, driver `hinge`), which this source has no step for yet.

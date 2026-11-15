@@ -48,6 +48,11 @@
         "id": "brasscap.ammo.camp-3",
         "type": 102,
         "value": 3
+      },
+      {
+        "id": "brasscap.strongbox",
+        "type": 102,
+        "value": 3
       }
     ]
   }

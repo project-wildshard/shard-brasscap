@@ -1,0 +1,33 @@
+{
+  "npc": {
+    "dialogue": {
+      "id": "brasscap.poster",
+      "name": "Wanted poster",
+      "nodes": [
+        {
+          "choices": [],
+          "id": "read",
+          "lines": [
+            "WANTED: THE DUST WYRM. It swallowed the 4:15 to Brasscap, carriages and all.",
+            "Shoot it in the gullet when it glows. 20 coins, paid by Sheriff Brass."
+          ],
+          "sets": [
+            "brasscap.poster.read"
+          ]
+        }
+      ],
+      "start": "read"
+    },
+    "talk": {
+      "at": [
+        -2.2,
+        1.2,
+        -8.5
+      ],
+      "dialogue": "brasscap.poster",
+      "id": "brasscap.poster.talk",
+      "label": "Read the wanted poster",
+      "radius": 2.2
+    }
+  }
+}
