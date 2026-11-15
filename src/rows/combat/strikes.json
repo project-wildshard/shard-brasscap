@@ -62,11 +62,11 @@
         "cooldown": 0.5,
         "damage": 20,
         "id": "brasscap.wyrm.burst",
-        "range": 4,
+        "range": 7,
         "recover": 0.6,
         "shape": {
           "kind": "point",
-          "radius": 1.6
+          "radius": 3
         },
         "speed": 0,
         "tags": [
@@ -85,7 +85,7 @@
         "shape": {
           "halfAngle": 0.12,
           "kind": "wedge",
-          "length": 10
+          "length": 18
         },
         "speed": 0,
         "tags": [
@@ -99,12 +99,12 @@
         "cooldown": 2.5,
         "damage": 16,
         "id": "brasscap.wyrm.sweep",
-        "range": 6,
+        "range": 8,
         "recover": 1,
         "shape": {
           "halfAngle": 1.4,
           "kind": "arc",
-          "radius": 3
+          "radius": 7
         },
         "speed": 0,
         "tags": [

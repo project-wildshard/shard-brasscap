@@ -95,11 +95,11 @@
         "aggressive": true,
         "dims": {
           "bodyHalfLen": 0.4,
-          "bodyRadius": 0.45,
-          "bodyY": 0.9,
+          "bodyRadius": 0.55,
+          "bodyY": 1.0,
           "feet": [],
-          "halfWidth": 0.45,
-          "headRadius": 0.36,
+          "halfWidth": 0.55,
+          "headRadius": 0.6,
           "legLen": 0.5
         },
         "id": "brasscap.wyrm",
@@ -120,8 +120,8 @@
             },
             "rarity": "rare",
             "scale": [
-              2,
-              2
+              5,
+              5
             ],
             "weight": 0
           }

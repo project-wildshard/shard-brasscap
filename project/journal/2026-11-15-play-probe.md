@@ -84,3 +84,7 @@ So the fixes are engine first (TC-E1a to TC-E1d), then rows.
   rusher pack (a 0 to 4 count), the Dust Wyrm and the report back to Sheriff Brass. His talk starts it (TC-B6).
 - Two achievements: the quest's `brasscap.mesa` and the bounty's `brasscap.wyrm` (TC-B5).
 - 9 POIs in `manifest.json`: depot, target range, the three camps, strongbox, gate, rusher hollow and the Wyrm's pit.
+
+## The Wyrm at the cleanroom size (opus-brassgun2, 2026-11-15)
+
+Jake (Scene Board t2-14): "why does the brasscap boss get soe small bruv". The live Wyrm was the 2.1 m rig at spawn scale 2 on bear dims. Now spawn and variant scale 5 (about 10.5 m to the maw top; the cleanroom's emerge arch tops out near 11 m), dims bodyRadius 0.55, bodyY 1.0, headRadius 0.6 (capsule 2.75 m by 10 m, lock point 8 m up, at the maw). Reach grew with it: burst 7 m (radius 3), sweep 8 m (arc 7), spit wedge 18 m; arena radius 16. From the t2-14 spot (2, -84, yaw 0) the Wyrm fills 51% of the frame height against 56% in the cleanroom's t2-14 ([capture](2026-11-15-wyrm-t2-14.jpg), local dev, spawn moved there for the shot only).
