@@ -2,7 +2,8 @@
 // TEMPLATE-E2E TC-B0 (J357): Brasscap's play probe. One headless, muted Chromium page enters Brasscap Mesa the two ways a
 // player does, by its Shard Select card and by the grid road into its cell (-1, -1) (and `--entry=chunk`, the one-shard page), and prints JSON: where the player
 // stands (and how far from the depot porch and its rifle rack), the held item and its rounds, the hotbar, the creatures
-// alive within 60 m with their hp and brain, the quest step, the flags and the coins. Steps (`--do`) then act on the world
+// alive within 60 m with their hp and brain (the regional world's), the creature bodies the page draws (`bodies`: a grid
+// cell's skinned meshes, shown and in the camera's view, by look), the quest step, the flags and the coins. Steps (`--do`) then act on the world
 // by real input (keys and the mouse) and read again after each, so a content row's done-when is one line of this JSON.
 //
 //   node kit/scripts/play-probe.mjs [--staging | --base=<url>] [--entry=select|road|both] [--layout=desktop|phone]
@@ -36,6 +37,27 @@ const PORCH = { x: -2.2, z: -0.92 }, SPAWN = { x: -1.6, z: 2.6 };
 const ARGS = ['--use-mock-keychain', '--password-store=basic', '--mute-audio', '--use-angle=metal', '--ignore-gpu-blocklist'];
 const sleep = (ms) => new Promise((done) => { setTimeout(done, ms); });
 
+/** The creature bodies the page draws: a grid cell's (data or bound) creatures are `neighbour-creature:<look>` skinned meshes in
+ *  its cell root (engine `grid/neighbourLife.ts`), not the regional world's `state().creatures`. `shown` is visible up its whole
+ *  parent chain; `inView` is shown and inside the camera's frustum. Positions are the cell root's own frame, as the player's.
+ *  Runs in the page: `install` puts it on `window.__probeBodies` after entry. */
+function drawnBodies(world, pos) {
+  const scene = world?.game?.scene, cam = world?.game?.camera;
+  if (scene === undefined || cam === undefined) return null;
+  const rows = [];
+  scene.traverse((o) => {
+    if (typeof o.name !== 'string' || !o.name.startsWith('neighbour-creature:')) return;
+    let shown = true; for (let p = o; p !== null; p = p.parent) if (!p.visible) { shown = false; break; }
+    const ndc = o.position.clone().setFromMatrixPosition(o.matrixWorld).project(cam);
+    const at = { x: o.position.x, y: o.position.y, z: o.position.z };
+    rows.push({ skin: o.name.slice('neighbour-creature:'.length), shown, inView: shown && Math.abs(ndc.x) <= 1 && Math.abs(ndc.y) <= 1 && ndc.z < 1,
+      pos: at, d: Math.round(Math.hypot(at.x - pos.x, at.z - pos.z) * 10) / 10 });
+  });
+  return rows;
+}
+
+const install = (page) => page.evaluate(`window.__probeBodies = ${drawnBodies.toString()}`);
+
 /** Everything the probe reads, in the page. The cell's frame: on a grid page the player's position is the cell's own. */
 function read({ porch, spawn }) {
   const W = /** @type {any} */ (window), P = W.__wildshard, world = P?.world;
@@ -47,6 +69,7 @@ function read({ porch, spawn }) {
   const near = st.creatures.map((c) => ({ ...c, d: Math.round(Math.hypot(c.pos.x - pos.x, c.pos.z - pos.z) * 10) / 10 })).filter((c) => c.d <= 60 && c.hp > 0);
   const kinds = {}; for (const c of near) kinds[c.kind] = (kinds[c.kind] ?? 0) + 1;
   const wire = W.__workerClient?.();
+  const bodies = W.__probeBodies?.(world, pos) ?? null;
   return {
     inside: grid?.inside ?? area?.instance ?? null, slug: area?.slug ?? null, appState: st.appState,
     pos: { x: Math.round(pos.x * 100) / 100, y: Math.round(pos.y * 100) / 100, z: Math.round(pos.z * 100) / 100 }, hp: st.player.health,
@@ -54,6 +77,10 @@ function read({ porch, spawn }) {
     held: { ...gun(held), state: st.weapon.state }, hotbar: (eq.list ?? []).map(gun),
     creatures: { within60: near.length, kinds, all: st.creatures.length, allAlive: st.creatures.filter((c) => c.hp > 0).length,
       rows: near.slice(0, 24).map((c) => ({ kind: c.kind, hp: Math.round(c.hp * 10) / 10, d: c.d, brain: c.brain })) },
+    bodies: bodies === null ? null : { drawn: bodies.filter((b) => b.shown).length, inView: bodies.filter((b) => b.inView).length,
+      bySkin: bodies.reduce((by, b) => (b.shown ? { ...by, [b.skin]: (by[b.skin] ?? 0) + 1 } : by), {}),
+      inViewBySkin: bodies.reduce((by, b) => (b.inView ? { ...by, [b.skin]: (by[b.skin] ?? 0) + 1 } : by), {}),
+      within60: bodies.filter((b) => b.shown && b.d <= 60).length, life: grid?.life ?? null },
     quest: wire?.quests ?? st.quest, flags: wire?.flags ?? area?.flags ?? [], coins: wire?.paid ?? null, owned: wire?.owned ?? null,
     wire: wire === undefined ? null : { rows: wire.rows, drawn: wire.drawn, hits: wire.hits, kills: wire.kills, hp: wire.hp, fights: wire.fights, cell: wire.cell },
     prompt: world.hud?.promptText ?? null, frames: wire?.frames ?? null,
@@ -118,10 +145,14 @@ async function walk(page, x, z, stop = 2, ms = 90_000) {
   return near;
 }
 
-/** The nearest live creature of a kind, in the cell's frame. */
+/** The nearest live creature of a kind, in the cell's frame: the regional world's, else (a grid cell) the nearest drawn body
+ *  whose look names the kind (`body: true`; its life is read from the page's kills, not its hp). */
 const nearest = (page, kind) => page.evaluate((k) => {
-  const st = /** @type {any} */ (window).__wildshard.state(), p = st.player.pos;
+  const W = /** @type {any} */ (window), st = W.__wildshard.state(), p = st.player.pos;
   const rows = st.creatures.filter((c) => c.hp > 0 && (c.kind === k || c.id.startsWith(k))).map((c) => ({ ...c, d: Math.hypot(c.pos.x - p.x, c.pos.z - p.z) }));
+  if (rows.length === 0) {
+    for (const b of W.__probeBodies?.(W.__wildshard.world, p) ?? []) if (b.shown && b.skin.includes(k)) rows.push({ id: `${b.skin}@${Math.round(b.pos.x)},${Math.round(b.pos.z)}`, kind: k, pos: b.pos, hp: 1, d: b.d, body: true });
+  }
   rows.sort((a, b) => a.d - b.d); return rows[0] ?? null;
 }, kind);
 
@@ -163,9 +194,13 @@ async function step(page, name) {
   if (verb === 'kill') {
     const first = await nearest(page, arg); if (first === null) return { verb, found: false };
     const ends = Date.now() + 45_000; let shots = 0, target = first;
+    const kills = () => page.evaluate(() => /** @type {any} */ (window).__workerClient?.()?.kills ?? 0), before = await kills();
     while (Date.now() < ends) {
-      const c = await page.evaluate((id) => /** @type {any} */ (window).__wildshard.state().creatures.find((row) => row.id === id) ?? null, target.id);
+      // a drawn body has no hp on the page: it is down when this page's confirmed kills grow (or no body of the kind is left)
+      const c = target.body === true ? ((await kills()) > before ? null : await nearest(page, arg))
+        : await page.evaluate((id) => /** @type {any} */ (window).__wildshard.state().creatures.find((row) => row.id === id) ?? null, target.id);
       if (c === null || c.hp <= 0) return { verb, found: true, killed: true, shots };
+      if (target.body === true) target = c;
       const d = await page.evaluate((p) => { const at = /** @type {any} */ (window).__wildshard.state().player.pos; return Math.hypot(p.x - at.x, p.z - at.z); }, c.pos);
       if (d > 25) { await walk(page, c.pos.x, c.pos.z, 20, 15_000); continue; }
       await aimAt(page, c); await fire(page, 1); shots++;
@@ -213,6 +248,7 @@ try {
     const run = { entry: how };
     try {
       run.loadMs = await enter(page, how);
+      await install(page);
       if (how === 'road') run.road = await roadIn(page);
       run.at = await page.evaluate(read, { porch: PORCH, spawn: SPAWN });
       if (flag('eval', '') !== '') run.eval = await page.evaluate(flag('eval', '')).catch((error) => String(error));
