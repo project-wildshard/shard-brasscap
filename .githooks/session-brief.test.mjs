@@ -4,21 +4,18 @@ import { test, describe, after } from 'node:test';
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
 import { chmodSync, cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, realpathSync, rmSync, writeFileSync } from 'node:fs';
-import { tmpdir } from 'node:os';
 import { dirname, join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
+const CANONICAL = dirname(spawnSync('git', ['-C', ROOT, 'rev-parse', '--path-format=absolute', '--git-common-dir'], { encoding: 'utf8' }).stdout.trim());
+const SCRATCH = join(ROOT, 'tmp/codex-netlag');
+mkdirSync(SCRATCH, { recursive: true });
 // The agent layout (repo-kit agent-sync) keeps hook scripts in .agents/hooks/;
 // a repo not yet stamped keeps them in .claude/hooks/.
 const hookScript = (root, name) => ['.agents', '.claude'].map((dir) => join(root, dir, 'hooks', name)).find((path) => existsSync(path)) ?? join(root, '.claude', 'hooks', name);
 const BRIEF = hookScript(ROOT, 'session-brief.sh');
-// Run from a plan worktree (.worktrees/<slug>), the hook labels every peer
-// under ROOT by that worktree, not by `main` or a nested path.
-const common = spawnSync('git', ['-C', ROOT, 'rev-parse', '--path-format=absolute', '--git-common-dir'], { encoding: 'utf8' }).stdout.trim();
-const planWt = common ? relative(realpathSync(dirname(common)), realpathSync(ROOT)) : '';
-const where = (label) => (planWt || label).replace(/[.*+?^${}()|[\]\\/]/g, '\\$&');
-const bin = mkdtempSync(join(tmpdir(), 'repo-herdr-'));
+const bin = mkdtempSync(join(SCRATCH, 'repo-herdr-'));
 after(() => rmSync(bin, { recursive: true, force: true }));
 
 const agent = (pane, session, cwd, extra = {}) => ({
@@ -27,9 +24,9 @@ const agent = (pane, session, cwd, extra = {}) => ({
 });
 writeFileSync(join(bin, 'agents.json'), JSON.stringify({ result: { agents: [
   agent('w1:p1', 'me', ROOT, { terminal_title_stripped: 'Me, myself' }),
-  agent('w1:p2', 'peer', ROOT, { agent_status: 'idle', terminal_title_stripped: '⠐ Build the queue view' }),
-  agent('w1:p3', 'wt', join(ROOT, '.claude/worktrees/agent-x/src'), { tokens: { goal: 'scaffold' } }),
-  agent('w1:p4', 'bare', join(ROOT, 'docs')),
+  agent('w1:p2', 'peer', CANONICAL, { agent_status: 'idle', terminal_title_stripped: '⠐ Build the queue view' }),
+  agent('w1:p3', 'wt', join(CANONICAL, '.claude/worktrees/agent-x/src'), { tokens: { goal: 'scaffold' } }),
+  agent('w1:p4', 'bare', join(CANONICAL, 'docs')),
   agent('w2:p1', 'elsewhere', '/Users/someone/other-repo', { terminal_title_stripped: 'Other repo' }),
 ] } }));
 writeFileSync(join(bin, 'herdr'), `#!/usr/bin/env bash\n[ "$1 $2" = "agent list" ] && cat "${join(bin, 'agents.json')}"\n`);
@@ -46,9 +43,9 @@ const brief = (env, input = '') => {
 describe('session brief: herdr peers', () => {
   test('lists the other agents in this repo, not self or other repos', () => {
     const out = brief({ HERDR_ENV: '1', CLAUDE_CODE_SESSION_ID: 'me' });
-    assert.match(out, new RegExp(`w1:p2 {2}idle {2}Build the queue view {2}\\[${where('main')}\\]`));
-    assert.match(out, new RegExp(`w1:p3 {2}working {2}scaffold {2}\\[${where('.claude/worktrees/agent-x')}\\]`));
-    assert.match(out, new RegExp(`w1:p4 {2}working {2}\\(no goal set\\) {2}\\[${where('main')}\\]`));
+    assert.match(out, /w1:p2 {2}idle {2}Build the queue view {2}\[main\]/);
+    assert.match(out, /w1:p3 {2}working {2}scaffold {2}\[\.claude\/worktrees\/agent-x\]/);
+    assert.match(out, /w1:p4 {2}working {2}\(no goal set\) {2}\[main\]/);
     assert.match(out, /commit only your own paths/);
     assert.doesNotMatch(out, /Me, myself|Other repo/);
   });
@@ -70,7 +67,7 @@ describe('session brief: herdr peers', () => {
 // temporary git repo that holds a copy of this repo's hook folder.
 describe('session brief: live plans', () => {
   const plans = (files) => {
-    const repo = mkdtempSync(join(tmpdir(), 'repo-brief-'));
+    const repo = mkdtempSync(join(SCRATCH, 'repo-brief-'));
     after(() => rmSync(repo, { recursive: true, force: true }));
     spawnSync('git', ['init', '-q', '-b', 'main'], { cwd: repo });
     const hooks = relative(ROOT, dirname(BRIEF));
@@ -103,7 +100,7 @@ describe('session brief: live plans', () => {
 // 40 lines (J273): 5 asks, 5 plans, 4 journal lines, 3 of the rest.
 describe('session brief: line cap', () => {
   test('a busy repo still gets at most 40 lines, each cut section saying so', () => {
-    const repo = realpathSync(mkdtempSync(join(tmpdir(), 'repo-brief-')));
+    const repo = realpathSync(mkdtempSync(join(SCRATCH, 'repo-brief-')));
     after(() => rmSync(repo, { recursive: true, force: true }));
     const env = {
       ...Object.fromEntries(Object.entries(process.env).filter(([key]) => !key.startsWith('GIT_') && !['HERDR_ENV', 'HERDR_PANE_ID', 'CLAUDE_CODE_SESSION_ID'].includes(key))),

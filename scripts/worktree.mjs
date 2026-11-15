@@ -53,7 +53,7 @@ for source, target in zip(parts[0::2], parts[1::2]):
             sys.exit(f'{target.decode()}: {os.strerror(ctypes.get_errno())}')
     finally:
         os.close(fd)`;
-const USAGE='usage: node scripts/worktree.mjs new <slug> [--no-install] [--no-pins] [--no-herdr] [--no-clone]\n       node scripts/worktree.mjs reap [--dry-run] [--grace=HOURS] [--no-remote]';
+const USAGE='usage: node scripts/worktree.mjs new <slug> [--row=PLAN-ROW] [--no-install] [--no-pins] [--no-herdr] [--no-clone]\n       node scripts/worktree.mjs reap [--dry-run] [--grace=HOURS] [--no-remote]';
 
 class StopError extends Error{name='StopError';}
 
@@ -99,7 +99,7 @@ export function freeGib(path,env){
   return value;
  }
  const volume=statfsSync(path);
- return Number(volume.bavail)*Number(volume.bsize)/2**30;
+ return volume.bavail*volume.bsize/2**30;
 }
 
 /**
@@ -141,9 +141,11 @@ export function parseArgs(argv){
  if(command!=='new'||slug===undefined)throw new StopError(USAGE);
  if(!SLUG.test(slug))throw new StopError(`slug "${slug}" must match ${SLUG.source}`);
  const flags=new Set(['--no-install','--no-pins','--no-herdr','--no-clone']);
- const unknown=rest.filter(arg=>!flags.has(arg));
+ const row=rest.find(arg=>arg.startsWith('--row='));
+ const unknown=rest.filter(arg=>!flags.has(arg)&&arg!==row);
  if(unknown.length>0)throw new StopError(`unknown option ${unknown.join(' ')}\n${USAGE}`);
- return {slug,install:!rest.includes('--no-install'),pins:!rest.includes('--no-pins'),herdr:!rest.includes('--no-herdr'),clone:!rest.includes('--no-clone')};
+ if(row!==undefined&&!/^--row=[A-Z][A-Z0-9-]*\d+[a-z]?$/u.test(row))throw new StopError(`invalid plan row ${row}\n${USAGE}`);
+ return {slug,row:row?.slice('--row='.length)??null,install:!rest.includes('--no-install'),pins:!rest.includes('--no-pins'),herdr:!rest.includes('--no-herdr'),clone:!rest.includes('--no-clone')};
 }
 
 /** The canonical checkout of the repo `cwd` is in: the main worktree, never a linked one. @param {string} cwd */
@@ -183,7 +185,7 @@ function convertedPaths(tree,paths){
 /** Clone into `tree` each tracked file the canonical checkout holds clean with the same blob and mode, then keep only
  * clones whose raw bytes hash to their blob and whose mode matches. @param {string} canonical @param {string} tree
  * @returns {number} files kept */
-function cloneTrackedFiles(canonical,tree){
+export function cloneTrackedFiles(canonical,tree){
  const source=stagedBlobs(canonical),target=stagedBlobs(tree);
  // Hidden edits count as dirty: modified, deleted, staged, assume-unchanged (lowercase tag) or skip-worktree (S).
  const dirty=new Set(nul(git(canonical,['ls-files','-z','--modified','--deleted'])));
@@ -378,16 +380,22 @@ export function worktreeNew(argv,cwd=process.cwd(),env=process.env){
  const total=Number(((performance.now()-began)/1000).toFixed(2));
  const disk=diskCost(tree,freeBefore);
  process.stdout.write(`worktree disk     ${disk.text}\n`);
- const record={slug:options.slug,branch,base,tree,total,steps,disk,finished:new Date().toISOString()};
+ const created=new Date().toISOString();
+ const lane=/^[a-z][a-z0-9_-]*$/u.test(env.WS_LANE_NAME??'')?String(env.WS_LANE_NAME):null;
+ const record={slug:options.slug,branch,base,tree,total,steps,disk,finished:created};
+ let receiptOffset=null;
+ try{receiptOffset=statSync(env.WS_LANE_RECEIPTS??join(homedir(),'.cache/wildshard/lane-receipts.log')).size;}
+ catch(error){if(error instanceof Error&&'code'in error&&error.code==='ENOENT')receiptOffset=0;}
+ const owner={lane,session:env.CLAUDE_SESSION_ID??env.CLAUDE_CODE_SESSION_ID??lane,agent:env.CLAUDE_SESSION_ID||env.CLAUDE_CODE_SESSION_ID?'claude':lane===null?'unknown':'codex',row:options.row??env.WS_PLAN_ROW??null,created,activeHours:null,receiptOffset};
+ writeFileSync(join(tree,'.owner'),`${JSON.stringify(owner,null,2)}\n`,{flag:'wx'});
  mkdirSync(join(tree,'tmp'),{recursive:true});
  writeFileSync(join(tree,'tmp/worktree-setup.json'),`${JSON.stringify(record,null,2)}\n`);
- const lane=/^[a-z][a-z0-9_-]*$/u.test(env.WS_LANE_NAME??'')?String(env.WS_LANE_NAME):'';
- if(lane!==''){
+ if(lane!==null){
   const file=resolve(env.WS_LANE_RECEIPTS??join(homedir(),'.cache/wildshard/lane-receipts.log'));
   try{mkdirSync(dirname(file),{recursive:true});appendFileSync(file,`${new Date().toISOString().slice(11,16)} UTC ${lane} worktree new ${basename(canonical)}/${relative} on ${branch} from ${base.slice(0,10)} in ${total.toFixed(1)} s (${steps.map(row=>`${row.step} ${row.seconds.toFixed(1)}`).join(', ')}); ${disk.text}\n`);}
   catch(error){process.stderr.write(`worktree receipt unavailable: ${String(error)}\n`);}
  }
- const name=lane===''?'<lane>':lane;
+ const name=lane??'<lane>';
  process.stdout.write(`\nworktree ready in ${total.toFixed(1)} s: ${tree} on ${branch}\n\nLand (J240):\n  cd ${tree}\n  # commit by pathspec as usual; the hooks allow commits here on ${branch}\n  WS_LANE_NAME=${name} node scripts/land.mjs\n  # it pushes ${branch}, waits for its hosted CI (land.config.json workflows), rebases and fast-forwards main;\n  # check its receipt in ~/.cache/wildshard/lane-receipts.log. Force only your own plan/* branch\n  # after a rebase (--force-with-lease), never main.\n`);
  return 0;
 }
