@@ -16,21 +16,76 @@
         "wanderRadius": 0
       },
       {
-        "attackCooldownTicks": 90,
-        "awareRadius": 9,
+        "attackCooldownTicks": 120,
+        "awareRadius": 14,
         "id": "brasscap.bandit.camp",
         "kind": "pursue",
-        "leashRadius": 10,
+        "leashRadius": 18,
         "returnSpeed": 2,
-        "speed": 1.4,
-        "stopDistance": 1.6,
+        "speed": 1.6,
+        "stopDistance": 9,
         "thinkDivisor": 3,
-        "turnRate": 4,
+        "turnRate": 2.5,
         "wanderEveryTicks": 360,
         "wanderRadius": 1.5
+      },
+      {
+        "attackCooldownTicks": 180,
+        "awareRadius": 22,
+        "id": "brasscap.bandit.marksman",
+        "kind": "pursue",
+        "leashRadius": 22,
+        "returnSpeed": 0.01,
+        "speed": 0.01,
+        "stopDistance": 20,
+        "thinkDivisor": 3,
+        "turnRate": 1.6,
+        "wanderEveryTicks": 600,
+        "wanderRadius": 0
       }
     ],
-    "groups": [],
+    "groups": [
+      {
+        "attackSeconds": 0.42,
+        "biteCue": "bandit_bite",
+        "biteRadius": 1.6,
+        "breakoffSeconds": 1.0,
+        "coneAngle": 1.2,
+        "dashSeconds": 1.5,
+        "hearing": [
+          4,
+          8,
+          14,
+          24
+        ],
+        "home": [
+          3.5,
+          -76.5
+        ],
+        "howlCue": "bandit_howl",
+        "id": "brasscap.bandit.rushers",
+        "kind": "pack",
+        "leaderVariant": "rusher",
+        "members": [
+          "bandit.rusher.1",
+          "bandit.rusher.2",
+          "bandit.rusher.3",
+          "bandit.rusher.4"
+        ],
+        "ringMaxRadius": 9,
+        "ringMinRadius": 6,
+        "runSpeed": 7.5,
+        "shadowMaxRadius": 20,
+        "shadowMinRadius": 14,
+        "sightRadius": 26,
+        "smellRadius": 30,
+        "snarlCue": "bandit_snarl",
+        "telegraphSeconds": 0.5,
+        "thinkDivisor": 6,
+        "trotSpeed": 3,
+        "yipCue": "bandit_yip"
+      }
+    ],
     "spawns": [
       {
         "at": [
@@ -73,7 +128,7 @@
         "scale": 1,
         "seed": 41,
         "species": "brasscap.bandit",
-        "strike": null,
+        "strike": "brasscap.bandit.shot",
         "variant": "tin",
         "yaw": 0
       },
@@ -88,7 +143,7 @@
         "scale": 1,
         "seed": 42,
         "species": "brasscap.bandit",
-        "strike": null,
+        "strike": "brasscap.bandit.shot",
         "variant": "tin",
         "yaw": 0
       },
@@ -103,7 +158,7 @@
         "scale": 1,
         "seed": 43,
         "species": "brasscap.bandit",
-        "strike": null,
+        "strike": "brasscap.bandit.shot",
         "variant": "tin",
         "yaw": 0
       },
@@ -113,12 +168,12 @@
           6,
           -36.5
         ],
-        "brain": "brasscap.bandit.camp",
+        "brain": "brasscap.bandit.marksman",
         "id": "bandit.camp-2.1",
         "scale": 1,
         "seed": 44,
         "species": "brasscap.bandit",
-        "strike": null,
+        "strike": "brasscap.bandit.rifle",
         "variant": "tin",
         "yaw": 0
       },
@@ -133,7 +188,7 @@
         "scale": 1,
         "seed": 45,
         "species": "brasscap.bandit",
-        "strike": null,
+        "strike": "brasscap.bandit.shot",
         "variant": "tin",
         "yaw": 0
       },
@@ -143,12 +198,12 @@
           6,
           -38.5
         ],
-        "brain": "brasscap.bandit.camp",
+        "brain": "brasscap.bandit.marksman",
         "id": "bandit.camp-2.3",
         "scale": 1,
         "seed": 46,
         "species": "brasscap.bandit",
-        "strike": null,
+        "strike": "brasscap.bandit.rifle",
         "variant": "tin",
         "yaw": 0
       },
@@ -163,7 +218,7 @@
         "scale": 1,
         "seed": 47,
         "species": "brasscap.bandit",
-        "strike": null,
+        "strike": "brasscap.bandit.shot",
         "variant": "tin",
         "yaw": 0
       },
@@ -178,7 +233,7 @@
         "scale": 1,
         "seed": 48,
         "species": "brasscap.bandit",
-        "strike": null,
+        "strike": "brasscap.bandit.shot",
         "variant": "tin",
         "yaw": 0
       },
@@ -193,9 +248,69 @@
         "scale": 1,
         "seed": 49,
         "species": "brasscap.bandit",
-        "strike": null,
+        "strike": "brasscap.bandit.shot",
         "variant": "tin",
         "yaw": 0
+      },
+      {
+        "at": [
+          1.5,
+          0,
+          -74.5
+        ],
+        "brain": "brasscap.bandit.rushers",
+        "id": "bandit.rusher.1",
+        "scale": 1,
+        "seed": 61,
+        "species": "brasscap.bandit",
+        "strike": null,
+        "variant": "rusher",
+        "yaw": 3.14159
+      },
+      {
+        "at": [
+          4.5,
+          0,
+          -75.5
+        ],
+        "brain": "brasscap.bandit.rushers",
+        "id": "bandit.rusher.2",
+        "scale": 1,
+        "seed": 62,
+        "species": "brasscap.bandit",
+        "strike": null,
+        "variant": "rusher",
+        "yaw": 3.14159
+      },
+      {
+        "at": [
+          2.0,
+          0,
+          -78.0
+        ],
+        "brain": "brasscap.bandit.rushers",
+        "id": "bandit.rusher.3",
+        "scale": 1,
+        "seed": 63,
+        "species": "brasscap.bandit",
+        "strike": null,
+        "variant": "rusher",
+        "yaw": 3.14159
+      },
+      {
+        "at": [
+          5.5,
+          0,
+          -78.5
+        ],
+        "brain": "brasscap.bandit.rushers",
+        "id": "bandit.rusher.4",
+        "scale": 1,
+        "seed": 64,
+        "species": "brasscap.bandit",
+        "strike": null,
+        "variant": "rusher",
+        "yaw": 3.14159
       },
       {
         "at": [

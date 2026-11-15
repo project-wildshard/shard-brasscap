@@ -2,6 +2,44 @@
   "rows": {
     "strikes": [
       {
+        "active": 0.15,
+        "cooldown": 2.6,
+        "damage": 14,
+        "id": "brasscap.bandit.rifle",
+        "range": 20,
+        "recover": 0.8,
+        "shape": {
+          "halfAngle": 0.06,
+          "kind": "wedge",
+          "length": 20
+        },
+        "speed": 0,
+        "tags": [
+          "creature.bear"
+        ],
+        "weight": 1,
+        "windup": 1.6
+      },
+      {
+        "active": 0.15,
+        "cooldown": 1.6,
+        "damage": 8,
+        "id": "brasscap.bandit.shot",
+        "range": 12,
+        "recover": 0.6,
+        "shape": {
+          "halfAngle": 0.1,
+          "kind": "wedge",
+          "length": 12
+        },
+        "speed": 0,
+        "tags": [
+          "creature.bear"
+        ],
+        "weight": 1,
+        "windup": 1.1
+      },
+      {
         "active": 0.2,
         "cooldown": 0.5,
         "damage": 20,

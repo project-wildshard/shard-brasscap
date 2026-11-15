@@ -54,7 +54,7 @@
         "lockable": true,
         "variants": [
           {
-            "hp": 10,
+            "hp": 35,
             "id": "tin",
             "label": "Tin bandit",
             "mods": {
@@ -68,6 +68,24 @@
             "scale": [
               1,
               1
+            ],
+            "weight": 1
+          },
+          {
+            "hp": 25,
+            "id": "rusher",
+            "label": "Bandit rusher",
+            "mods": {
+              "chargeDamage": 9,
+              "chargeDist": 1,
+              "damageTaken": 1,
+              "relentless": true,
+              "speed": 1.2
+            },
+            "rarity": "common",
+            "scale": [
+              0.95,
+              0.95
             ],
             "weight": 1
           }

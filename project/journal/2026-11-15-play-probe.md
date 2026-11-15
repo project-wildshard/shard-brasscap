@@ -28,3 +28,17 @@ So the fixes are engine first (TC-E1a to TC-E1d), then rows.
   30 lever rounds. They are untested in a built shard: the source's hero is stale, so `wildshard check` refuses every build
   until TC-B9 captures a new one; the rows pass shard-format's item and target schemas.
 - The probe's `face:x,z,y` also pitches to height y, so a shot lands on a target's body.
+
+## TC-B3: bandits fight back (opus-brassgun2, 2026-11-15)
+
+- Bandits have 35 hp and a telegraphed pistol shot: a narrow wedge (12 m, 1.1 s windup, 8 damage). Not a `lane`: a data
+  strike row always carries `motion`, so a still lane stays live for its length plus 1.2 s and freezes the bandit.
+- Camp 2's two ledge bandits are marksmen: a `pursue` brain that never moves (speed 0.01, stop 20 m) and a slow rifle
+  shot (20 m, 1.6 s windup, 14 damage). Strike rows cap length and range at 20 m.
+- A pack of 4 rushers waits past the gate (`creatures.groups`, `kind: pack`, the data host's pack recipe). Their bite is
+  the `rusher` variant's `chargeDamage` (9).
+- `guardian` brains need a native port a data shard's server doesn't install (engine `dataCreaturePorts.ts` gives
+  ram-grazer, challenge-grazer, the divers and burst-flyer, plus pack and herd groups), so the third brain kind comes in
+  TC-B4 from a diver.
+- Every skinned body is bound in client scripts (an empty sand-module binding, no pose, no emitters), so a grid data cell
+  draws it (J342, Mossgate's way). The tin target posts use `engine.sphere`, which has no neighbour view yet.
