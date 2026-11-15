@@ -15,7 +15,7 @@
         },
         "speed": 0,
         "tags": [
-          "creature.bear"
+          "creature.bandit"
         ],
         "weight": 1,
         "windup": 1.6
@@ -34,7 +34,7 @@
         },
         "speed": 0,
         "tags": [
-          "creature.bear"
+          "creature.bandit"
         ],
         "weight": 1,
         "windup": 1.1
@@ -52,7 +52,7 @@
         },
         "speed": 0,
         "tags": [
-          "creature.bear"
+          "creature.drake"
         ],
         "weight": 1,
         "windup": 1.1
@@ -70,7 +70,7 @@
         },
         "speed": 0,
         "tags": [
-          "creature.bear"
+          "creature.wyrm"
         ],
         "weight": 3,
         "windup": 1.2
@@ -89,7 +89,7 @@
         },
         "speed": 0,
         "tags": [
-          "creature.bear"
+          "creature.wyrm"
         ],
         "weight": 1,
         "windup": 1.2
@@ -108,7 +108,7 @@
         },
         "speed": 0,
         "tags": [
-          "creature.bear"
+          "creature.wyrm"
         ],
         "weight": 2,
         "windup": 0.9
@@ -127,7 +127,7 @@
         },
         "speed": 8,
         "tags": [
-          "creature.bear"
+          "creature.wyrmling"
         ],
         "weight": 1,
         "windup": 0.8

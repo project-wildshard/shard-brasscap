@@ -49,7 +49,7 @@
           "legLen": 0.42
         },
         "id": "brasscap.bandit",
-        "kind": "bear",
+        "kind": "bandit",
         "label": "Tin bandit",
         "lockable": true,
         "variants": [
@@ -103,7 +103,7 @@
           "legLen": 0.5
         },
         "id": "brasscap.wyrm",
-        "kind": "bear",
+        "kind": "wyrm",
         "label": "Dust Wyrm",
         "lockable": true,
         "variants": [
@@ -139,7 +139,7 @@
           "legLen": 0.5
         },
         "id": "brasscap.wyrmling",
-        "kind": "bear",
+        "kind": "wyrmling",
         "label": "Dust wyrmling",
         "lockable": true,
         "variants": [
@@ -182,7 +182,7 @@
           "lockRange": 30
         },
         "id": "brasscap.drake",
-        "kind": "bear",
+        "kind": "drake",
         "label": "Sand drake",
         "lockable": true,
         "variants": [
