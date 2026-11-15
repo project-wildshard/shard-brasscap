@@ -60,11 +60,21 @@
         "name": "phase",
         "scope": "binding",
         "type": "i32"
+      },
+      {
+        "default": 0,
+        "max": 2,
+        "min": 0,
+        "name": "beat",
+        "scope": "binding",
+        "type": "i32"
       }
     ],
     "stateVersion": 1,
     "strikes": {
-      "burst": "brasscap.wyrm.burst"
+      "burst": "brasscap.wyrm.burst",
+      "spit": "brasscap.wyrm.spit",
+      "sweep": "brasscap.wyrm.sweep"
     },
     "targets": {},
     "tick": null,

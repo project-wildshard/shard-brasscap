@@ -15,7 +15,8 @@
       "dead:target.1",
       "dead:target.2",
       "dead:dust-wyrm",
-      "brasscap.mesa.done"
+      "brasscap.mesa.done",
+      "brasscap.bounty.done"
     ],
     "quests": [
       {
@@ -243,6 +244,50 @@
         ],
         "title": "The canyon gate",
         "track": false
+      },
+      {
+        "completeFlag": "brasscap.bounty.done",
+        "id": "brasscap.bounty",
+        "onComplete": {
+          "coins": 20,
+          "fact": "brasscap.wyrm"
+        },
+        "startWhen": {
+          "all": [
+            "brasscap.gate.open"
+          ]
+        },
+        "steps": [
+          {
+            "chip": "Bounty",
+            "done": {
+              "all": [
+                "dead:dust-wyrm"
+              ]
+            },
+            "hint": "Its gullet glows gold after each strike: shoot it then",
+            "id": "bounty.wyrm",
+            "markers": [
+              {
+                "at": {
+                  "poi": "world",
+                  "x": 2,
+                  "z": -100
+                },
+                "hideWhen": {
+                  "all": [
+                    "dead:dust-wyrm"
+                  ]
+                },
+                "id": "bounty.marker",
+                "label": "Dust Wyrm",
+                "short": "Wyrm"
+              }
+            ],
+            "objective": "Collect the bounty on the Dust Wyrm"
+          }
+        ],
+        "title": "Wanted: the Dust Wyrm"
       }
     ],
     "triggers": []

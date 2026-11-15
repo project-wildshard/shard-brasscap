@@ -76,6 +76,44 @@
         "windup": 1.2
       },
       {
+        "active": 0.2,
+        "cooldown": 3,
+        "damage": 14,
+        "id": "brasscap.wyrm.spit",
+        "range": 20,
+        "recover": 0.8,
+        "shape": {
+          "halfAngle": 0.12,
+          "kind": "wedge",
+          "length": 10
+        },
+        "speed": 0,
+        "tags": [
+          "creature.bear"
+        ],
+        "weight": 1,
+        "windup": 1.2
+      },
+      {
+        "active": 0.3,
+        "cooldown": 2.5,
+        "damage": 16,
+        "id": "brasscap.wyrm.sweep",
+        "range": 6,
+        "recover": 1,
+        "shape": {
+          "halfAngle": 1.4,
+          "kind": "arc",
+          "radius": 3
+        },
+        "speed": 0,
+        "tags": [
+          "creature.bear"
+        ],
+        "weight": 2,
+        "windup": 0.9
+      },
+      {
         "active": 0.5,
         "cooldown": 3,
         "damage": 10,

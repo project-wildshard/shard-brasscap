@@ -108,7 +108,7 @@
         "lockable": true,
         "variants": [
           {
-            "hp": 80,
+            "hp": 440,
             "id": "dust",
             "label": "Dust Wyrm",
             "mods": {

@@ -14,6 +14,21 @@
           "title": "Tamer of the mesa"
         }
       ]
+    },
+    {
+      "fact": "brasscap.wyrm",
+      "origin": {
+        "kind": "engine",
+        "source": "quest.complete"
+      },
+      "rewards": [
+        {
+          "id": "brasscap.wyrm",
+          "kind": "achievement",
+          "threshold": 1,
+          "title": "Dust Wyrm"
+        }
+      ]
     }
   ]
 }

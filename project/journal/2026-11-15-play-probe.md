@@ -51,3 +51,11 @@ So the fixes are engine first (TC-E1a to TC-E1d), then rows.
 - Brasscap now has 4 hostile species (bandit, wyrmling, drake, Dust Wyrm), 21 bodies and 3 brain kinds (`pursue`,
   `ram-grazer`, `orbit-diver`), plus the rusher pack.
 - Respawn waits on engine: a data shard's `creatures.spawns` never come back (only native runtime homes refill).
+
+## TC-B5: the Dust Wyrm at the bar (opus-brassgun2, 2026-11-15)
+
+- 440 hp (was 80), three strikes: the burst round its mound, a tail sweep (a 6 m arc at its scale) and, from the second
+  phase, a sand spit (a 20 m wedge). `behaviour/wyrm.as` turns them in order (`beat` state); each strike is told by the
+  sand ring and opens the gullet after, as the burst did. The pinned sdk's decision compiler builds it (35 of 100 lines).
+- A grid data cell's ledger only hears `quest.complete` (engine `grid/durability.ts`), so the boss achievement is a
+  bounty: "Wanted: the Dust Wyrm" starts when the gate opens and pays 20 coins and the `brasscap.wyrm` fact on its death.
