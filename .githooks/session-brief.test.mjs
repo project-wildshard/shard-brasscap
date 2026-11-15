@@ -13,6 +13,11 @@ const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 // a repo not yet stamped keeps them in .claude/hooks/.
 const hookScript = (root, name) => ['.agents', '.claude'].map((dir) => join(root, dir, 'hooks', name)).find((path) => existsSync(path)) ?? join(root, '.claude', 'hooks', name);
 const BRIEF = hookScript(ROOT, 'session-brief.sh');
+// Run from a plan worktree (.worktrees/<slug>), the hook labels every peer
+// under ROOT by that worktree, not by `main` or a nested path.
+const common = spawnSync('git', ['-C', ROOT, 'rev-parse', '--path-format=absolute', '--git-common-dir'], { encoding: 'utf8' }).stdout.trim();
+const planWt = common ? relative(realpathSync(dirname(common)), realpathSync(ROOT)) : '';
+const where = (label) => (planWt || label).replace(/[.*+?^${}()|[\]\\/]/g, '\\$&');
 const bin = mkdtempSync(join(tmpdir(), 'repo-herdr-'));
 after(() => rmSync(bin, { recursive: true, force: true }));
 
@@ -41,9 +46,9 @@ const brief = (env, input = '') => {
 describe('session brief: herdr peers', () => {
   test('lists the other agents in this repo, not self or other repos', () => {
     const out = brief({ HERDR_ENV: '1', CLAUDE_CODE_SESSION_ID: 'me' });
-    assert.match(out, /w1:p2 {2}idle {2}Build the queue view {2}\[main\]/);
-    assert.match(out, /w1:p3 {2}working {2}scaffold {2}\[\.claude\/worktrees\/agent-x\]/);
-    assert.match(out, /w1:p4 {2}working {2}\(no goal set\) {2}\[main\]/);
+    assert.match(out, new RegExp(`w1:p2 {2}idle {2}Build the queue view {2}\\[${where('main')}\\]`));
+    assert.match(out, new RegExp(`w1:p3 {2}working {2}scaffold {2}\\[${where('.claude/worktrees/agent-x')}\\]`));
+    assert.match(out, new RegExp(`w1:p4 {2}working {2}\\(no goal set\\) {2}\\[${where('main')}\\]`));
     assert.match(out, /commit only your own paths/);
     assert.doesNotMatch(out, /Me, myself|Other repo/);
   });
