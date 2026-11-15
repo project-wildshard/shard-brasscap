@@ -6,12 +6,14 @@
 // - the cleanroom's `colliders` list is one invisible solid box each (part `colliders`);
 // - the horizon mesas ring at 150 to 195 m round (0, -50) (the cleanroom's 150 to 320): a shard's parts stay in its cell,
 //   and a mesa over one of the cell's four entryways is left out; the sand flattens to road height past 190 m;
-// - the per-shot states are fixed at the cleanroom's default shot: camp 1 sitting, camp 2 on the ledge, camp 3 fighting, the
-//   gate shut, the Wyrm under the sand (its emerge, weak and defeat poses are `actors.ts` `wyrm`, for stage 6's states);
+// - the creatures are the shard's live ones (`shard.config.ts`: the tin bandits, targets and the Dust Wyrm from the data
+//   shard's rows and GLBs), not the cleanroom's posed meshes; `actors.ts` keeps those poses for stage 6 (AP23, creatures
+//   from code); the gate starts shut and the Wyrm under the sand, as the cleanroom's default shot;
+// - the gate's doors and their collider are panel `brasscap.gate` (`world.part(..., { panel })`): the bandit quest's
+//   `targets.panels` row hides both once the gate opens, as the data shard's `gate.door` node did;
 // - the viewmodel, AO bake and lamp bake are the cleanroom's own runtime and lean path, not world.
 import * as THREE from 'three';
 import { animate, flicker, solid, type ShardWorld } from '@wildshard/sharddev/scene/author';
-import { bandit } from './actors';
 import { groundColour, groundY, trailX } from './terrain';
 import { clouds, mesaSky, PAL, SUN_DIR } from './sky';
 import { Batch, box, cyl, facet, halo, hash, paint, place, rand, rr, seed, textTexture } from './util';
@@ -429,7 +431,9 @@ function town(props: THREE.Group, dyn: THREE.Group, signs: THREE.Group, gate: TH
     pivot.add(db.mesh(doorMat));
     gate.add(pivot);
   }
-  col(2, GH / 2, -62, GW / 2, GH / 2, 0.2);
+  // the shut gate's own collider: the gate part is panel `brasscap.gate`, hidden with its collider once the gate opens
+  const shut = new THREE.Mesh(new THREE.BoxGeometry(GW, GH, 0.4), new THREE.MeshBasicMaterial());
+  shut.position.set(2, GH / 2, -62); shut.visible = false; gate.add(solid(shut));
   // bell and lever box beside the gate, lantern on the post
   b.add(box(0.12, 3.2, 0.12, PAL.woodDark, 7.4, 1.6, -60.8)); b.add(box(0.9, 0.1, 0.1, PAL.woodDark, 7.05, 3.2, -60.8));
   b.add(cyl(0.12, 0.3, 0.4, 10, PAL.brass, 6.7, 2.9, -60.8));
@@ -469,13 +473,6 @@ function town(props: THREE.Group, dyn: THREE.Group, signs: THREE.Group, gate: TH
   props.add(b.mesh(new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.85, flatShading: true })));
 }
 
-/** The cleanroom's default shot's bandits (main.js `stage`): camp 1 sitting, camp 2 on the ledge, camp 3 fighting. */
-function bandits(part: THREE.Group): void {
-  part.add(bandit(-15.2, -27.2, 1.2, 'sit'), bandit(-12.7, -26.6, -0.7, 'sit'));
-  part.add(bandit(12.2, -33, -1.5, 'stand', 6), bandit(12.2, -35.8, -1.5, 'stand', 6));
-  part.add(bandit(15.5, -53.5, -1.8, 'stand'), bandit(13.5, -50.5, -2.2, 'stand'), bandit(19, -50, -2, 'stand'));
-}
-
 /** The light (main.js 45-79): the low warm sun, the sky / sand hemisphere, the sand's warm bounce, the haze, the post. */
 export function desertLight(world: ShardWorld): void {
   // the dome and the environment prefiltered from it over a sunlit sand floor (#ff8a5a) at 0.5
@@ -502,9 +499,8 @@ export function buildBrasscap(world: ShardWorld): void {
   world.ground(groundY, { colourAt: groundColour, material: new THREE.MeshStandardMaterial({ roughness: 0.95 }) });
   world.part('sky', (part) => { part.add(clouds()); });
   world.part('canyon', (part) => { canyon(part); });
-  const props = world.part('props', () => undefined), dyn = world.part('glow', () => undefined), signs = world.part('signs', () => undefined), gate = world.part('gate', () => undefined);
+  const props = world.part('props', () => undefined), dyn = world.part('glow', () => undefined), signs = world.part('signs', () => undefined), gate = world.part('gate', () => undefined, { panel: 'brasscap.gate' });
   town(props, dyn, signs, gate);
-  world.part('bandits', (part) => { bandits(part); });
   const hidden = new THREE.MeshBasicMaterial(), unit = new THREE.BoxGeometry(1, 1, 1);
   world.part('colliders', (part) => {
     for (const c of colliders) {

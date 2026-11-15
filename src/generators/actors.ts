@@ -1,6 +1,7 @@
 // SHARD-SOURCE AP16: brasscap-cleanroom src/actors.js (e311139), the Tin Bandit, the second player and the Dust Wyrm, as
-// static poses (a shard's creatures are posed meshes until stage 6's states). The viewmodel, rifle and dust sprites are
-// the cleanroom's runtime, not world, and stay out.
+// static poses. Not drawn: the shard's creatures are its live ones (the data shard's rows and GLBs, `shard.config.ts`);
+// these are stage 6's input (AP23, creatures from code). The viewmodel, rifle and dust sprites are the cleanroom's
+// runtime, not world, and stay out.
 import * as THREE from 'three';
 import { groundY } from './terrain';
 import { Batch, box, cyl, facet, halo, paint, place } from './util';
