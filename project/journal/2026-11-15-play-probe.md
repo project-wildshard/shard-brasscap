@@ -17,3 +17,14 @@ prints what the page holds. On staging (`blender-template` r3, engine v0.1.21) i
 - The bandits' `strike: null` and 10 hp stand, untested: nobody can see them.
 
 So the fixes are engine first (TC-E1a to TC-E1d), then rows.
+
+## TC-B1 and TC-B2 (opus-brassgun, 2026-11-15)
+
+- Engine `plan/tc-e1` (TC-E1b to TC-E1d) puts a grid data cell's declared items in hand: Brasscap's lever-action (the
+  loadout's primary) is held from the spawn and from the road, fires, and its rack restocks. The rack's prompt now reads
+  "Restock the lever-action (+30 rounds)".
+- Two more guns to pick up, rows only (`kit.lever` rows with their own profiles): a scattergun on camp 1's crate (4 shells,
+  18 damage, 25 m, wide) and a long rifle on camp 2's ledge (5 rounds, 30 damage, 200 m). An ammo box at each camp adds
+  30 lever rounds. They are untested in a built shard: the source's hero is stale, so `wildshard check` refuses every build
+  until TC-B9 captures a new one; the rows pass shard-format's item and target schemas.
+- The probe's `face:x,z,y` also pitches to height y, so a shot lands on a target's body.

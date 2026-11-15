@@ -8,9 +8,64 @@
           -0.92
         ],
         "id": "brasscap.rack.use",
-        "label": "Take the lever-action",
+        "label": "Restock the lever-action (+30 rounds)",
         "radius": 2.5,
         "scene": "brasscap.rack.take"
+      },
+      {
+        "at": [
+          -12.6,
+          0.9,
+          -26.4
+        ],
+        "id": "brasscap.scattergun.use",
+        "label": "Take the scattergun",
+        "radius": 2.5,
+        "scene": "brasscap.scattergun.take"
+      },
+      {
+        "at": [
+          12.8,
+          6.9,
+          -33.0
+        ],
+        "id": "brasscap.long-rifle.use",
+        "label": "Take the long rifle",
+        "radius": 2.5,
+        "scene": "brasscap.long-rifle.take"
+      },
+      {
+        "at": [
+          -11.4,
+          0.6,
+          -27.8
+        ],
+        "id": "brasscap.ammo.camp-1",
+        "label": "Ammo box (+30 lever rounds)",
+        "radius": 2.5,
+        "scene": "brasscap.ammo.camp-1"
+      },
+      {
+        "at": [
+          10.4,
+          6.6,
+          -31.2
+        ],
+        "id": "brasscap.ammo.camp-2",
+        "label": "Ammo box (+30 lever rounds)",
+        "radius": 2.5,
+        "scene": "brasscap.ammo.camp-2"
+      },
+      {
+        "at": [
+          13.6,
+          0.6,
+          -50.2
+        ],
+        "id": "brasscap.ammo.camp-3",
+        "label": "Ammo box (+30 lever rounds)",
+        "radius": 2.5,
+        "scene": "brasscap.ammo.camp-3"
       }
     ],
     "itemActions": [
@@ -23,6 +78,31 @@
         "action": 4,
         "item": "weapon.brasscap-lever",
         "scene": "brasscap.rack.reload"
+      },
+      {
+        "action": 3,
+        "item": "weapon.brasscap-scattergun",
+        "scene": "brasscap.scattergun.take"
+      },
+      {
+        "action": 3,
+        "item": "weapon.brasscap-long-rifle",
+        "scene": "brasscap.long-rifle.take"
+      },
+      {
+        "action": 3,
+        "item": "weapon.brasscap-lever",
+        "scene": "brasscap.ammo.camp-1"
+      },
+      {
+        "action": 3,
+        "item": "weapon.brasscap-lever",
+        "scene": "brasscap.ammo.camp-2"
+      },
+      {
+        "action": 3,
+        "item": "weapon.brasscap-lever",
+        "scene": "brasscap.ammo.camp-3"
       }
     ],
     "itemFields": [

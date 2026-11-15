@@ -116,6 +116,200 @@
             0
           ]
         }
+      },
+      {
+        "charge": 1,
+        "context": "brasscap.lever",
+        "family": "kit.lever",
+        "heavy": {
+          "cooldown": 0.82,
+          "damage": 18,
+          "effect": null,
+          "id": "brasscap.scattergun.round-heavy",
+          "range": 1,
+          "tags": [
+            "actor.player",
+            "weapon.brasscap-scattergun",
+            "dmg.ranged"
+          ],
+          "width": 0.1
+        },
+        "hook": null,
+        "id": "weapon.brasscap-scattergun",
+        "kind": "weapon",
+        "light": {
+          "cooldown": 0.82,
+          "damage": 18,
+          "effect": null,
+          "id": "brasscap.scattergun.round",
+          "range": 1,
+          "tags": [
+            "actor.player",
+            "weapon.brasscap-scattergun",
+            "dmg.ranged"
+          ],
+          "width": 0.1
+        },
+        "profile": {
+          "action": "lever",
+          "autoReload": 0.35,
+          "bloomMax": 0,
+          "bloomShot": 0,
+          "damageScale": 1,
+          "family": "firearm",
+          "interval": 0.82,
+          "lever": {
+            "autoReloadClose": 5,
+            "cockAt": 0.2,
+            "cycleDelay": 0.12,
+            "cycleTime": 0.7,
+            "ejectAt": 0.34,
+            "reloadIn": 0.22,
+            "reloadOut": 0.2
+          },
+          "magazine": 4,
+          "movingAimReduction": 0,
+          "movingSpread": 0,
+          "projectile": {
+            "delivery": "hitscan",
+            "flight": {
+              "drag": 0,
+              "gravity": 0,
+              "windCoupling": 0
+            },
+            "kind": "bullet",
+            "lifetime": 1,
+            "pool": 1,
+            "radius": 0,
+            "speed": 0,
+            "substeps": 1
+          },
+          "range": 25,
+          "reload": 0.5,
+          "reloadMode": "perRound",
+          "reserve": 16,
+          "spreadAds": 0,
+          "spreadHip": 6,
+          "spreadRadius": "sqrt"
+        },
+        "slot": "declared.weapon.brasscap-scattergun",
+        "ui": {
+          "blurb": "Four shells, wide and close: a rider at ten paces, nothing at forty.",
+          "icon": "lever",
+          "name": "Scattergun",
+          "swapIcon": "⌐"
+        },
+        "view": {
+          "colour": "#5a4a3a",
+          "position": [
+            0.19,
+            -0.22,
+            -0.56
+          ],
+          "recipe": "kit.rifle",
+          "rotation": [
+            0,
+            0,
+            0
+          ]
+        }
+      },
+      {
+        "charge": 1,
+        "context": "brasscap.lever",
+        "family": "kit.lever",
+        "heavy": {
+          "cooldown": 1.0699999999999998,
+          "damage": 30,
+          "effect": null,
+          "id": "brasscap.long-rifle.round-heavy",
+          "range": 1,
+          "tags": [
+            "actor.player",
+            "weapon.brasscap-long-rifle",
+            "dmg.ranged"
+          ],
+          "width": 0.1
+        },
+        "hook": null,
+        "id": "weapon.brasscap-long-rifle",
+        "kind": "weapon",
+        "light": {
+          "cooldown": 1.0699999999999998,
+          "damage": 30,
+          "effect": null,
+          "id": "brasscap.long-rifle.round",
+          "range": 1,
+          "tags": [
+            "actor.player",
+            "weapon.brasscap-long-rifle",
+            "dmg.ranged"
+          ],
+          "width": 0.1
+        },
+        "profile": {
+          "action": "lever",
+          "autoReload": 0.35,
+          "bloomMax": 0,
+          "bloomShot": 0,
+          "damageScale": 1,
+          "family": "firearm",
+          "interval": 1.0699999999999998,
+          "lever": {
+            "autoReloadClose": 5,
+            "cockAt": 0.2,
+            "cycleDelay": 0.12,
+            "cycleTime": 0.95,
+            "ejectAt": 0.34,
+            "reloadIn": 0.22,
+            "reloadOut": 0.2
+          },
+          "magazine": 5,
+          "movingAimReduction": 0,
+          "movingSpread": 0,
+          "projectile": {
+            "delivery": "hitscan",
+            "flight": {
+              "drag": 0,
+              "gravity": 0,
+              "windCoupling": 0
+            },
+            "kind": "bullet",
+            "lifetime": 1,
+            "pool": 1,
+            "radius": 0,
+            "speed": 0,
+            "substeps": 1
+          },
+          "range": 200,
+          "reload": 0.6,
+          "reloadMode": "perRound",
+          "reserve": 15,
+          "spreadAds": 0,
+          "spreadHip": 0.1,
+          "spreadRadius": "sqrt"
+        },
+        "slot": "declared.weapon.brasscap-long-rifle",
+        "ui": {
+          "blurb": "Five rounds, slow to work, true to two hundred metres.",
+          "icon": "rifle",
+          "name": "Long rifle",
+          "swapIcon": "⌐"
+        },
+        "view": {
+          "colour": "#3d2b1f",
+          "position": [
+            0.19,
+            -0.22,
+            -0.56
+          ],
+          "recipe": "kit.rifle",
+          "rotation": [
+            0,
+            0,
+            0
+          ]
+        }
       }
     ],
     "version": 1

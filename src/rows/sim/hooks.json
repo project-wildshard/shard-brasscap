@@ -23,6 +23,31 @@
         "id": "brasscap.gate.open",
         "type": 301,
         "value": 1
+      },
+      {
+        "id": "brasscap.scattergun.take",
+        "type": 102,
+        "value": 3
+      },
+      {
+        "id": "brasscap.long-rifle.take",
+        "type": 102,
+        "value": 3
+      },
+      {
+        "id": "brasscap.ammo.camp-1",
+        "type": 102,
+        "value": 3
+      },
+      {
+        "id": "brasscap.ammo.camp-2",
+        "type": 102,
+        "value": 3
+      },
+      {
+        "id": "brasscap.ammo.camp-3",
+        "type": 102,
+        "value": 3
       }
     ]
   }
