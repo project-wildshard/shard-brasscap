@@ -15,6 +15,10 @@ out of shard-format's `corpus/brasscap-mesa/`. One shard, at `src/`
 - `pnpm check:shard` is `wildshard check .`: it builds `src/` into
   `public/shardfiles/brasscap-mesa/` and validates, proves and
   reports on it. CI runs it too.
+- `pnpm watch` is `wildshard watch .`: it serves the canyon once and
+  swaps each edited scene part into the running page, no reload
+  (meta SHARD-SOURCE AP22). It prints the page's URL; open it with
+  `?skipintro`. A look edit the page can't take live reloads it.
 - `node tools/canyon.ts` writes `src/sources/canyon.glb`
   and `depot.glb`; `--bake src/world/canyon.glb` writes the bake
   input that `shard.config.ts` names. `rifle.ts`, `bandit.ts` and

@@ -27,6 +27,7 @@
     "check": "pnpm typecheck && pnpm lint && pnpm format:check && pnpm test && pnpm check:asks && pnpm check:agents && pnpm check:agent-sync && pnpm test:agent-hooks && pnpm check:parity && node --check scripts/chromium-keychain-check.mjs && node --test test/tooling/chrome-keychain.test.mjs test/tooling/worktree-guard.test.mjs test/tooling/disk-land.test.mjs test/tooling/lane-live.test.mjs test/tooling/keep-copy.test.mjs test/tooling/leftovers-report.test.mjs test/tooling/reap-report.test.mjs",
     "check:shard": "wildshard check .",
     "build:shard": "wildshard build .",
+    "watch": "wildshard watch .",
     "lint:shard": "oxlint -c .oxlintrc.author.json --deny-warnings src"
   },
   "dependencies": {
