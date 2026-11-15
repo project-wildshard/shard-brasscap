@@ -14,6 +14,7 @@
 // - the viewmodel, AO bake and lamp bake are the cleanroom's own runtime and lean path, not world.
 import * as THREE from 'three';
 import { animate, flicker, solid, type ShardWorld } from '@wildshard/sharddev/scene/author';
+import { cowboy } from './actors';
 import { groundColour, groundY, trailX } from './terrain';
 import { clouds, mesaSky, PAL, SUN_DIR } from './sky';
 import { Batch, box, cyl, facet, halo, hash, paint, place, rand, rr, seed, textTexture } from './util';
@@ -508,6 +509,12 @@ export function buildBrasscap(world: ShardWorld): void {
       m.position.set(c.x, c.y, c.z); m.scale.set(c.hx * 2, c.hy * 2, c.hz * 2); m.visible = false;
       part.add(solid(m));
     }
+  });
+  // Sheriff Brass on the porch deck (top 0.25 m), facing the spawn: the quest giver (rows/npcs/sheriff.json, TC-B6)
+  world.part('folk', (part) => {
+    const sheriff = cowboy(0, 0.6, Math.atan2(-1.6, 2));
+    sheriff.position.y = 0.25;
+    part.add(sheriff);
   });
   // the cleanroom's player capsule starts on the porch at (-1.6, 2.6), looking down the canyon (yaw 0)
   world.spawn(-1.6, 0.35, 2.6, 0);

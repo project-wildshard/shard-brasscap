@@ -16,15 +16,39 @@
       "dead:target.2",
       "dead:dust-wyrm",
       "brasscap.mesa.done",
-      "brasscap.bounty.done"
+      "brasscap.bounty.done",
+      "brasscap.sheriff.met",
+      "brasscap.sheriff.reported"
     ],
     "quests": [
       {
         "completeFlag": "brasscap.mesa.done",
         "id": "brasscap.mesa",
+        "intro": {
+          "chip": "Sheriff",
+          "hint": "Walk up to him and press E",
+          "markers": [
+            {
+              "at": {
+                "poi": "world",
+                "x": 0.0,
+                "z": 0.6
+              },
+              "id": "sheriff.marker",
+              "label": "Sheriff Brass",
+              "short": "Sheriff"
+            }
+          ],
+          "objective": "Talk to the sheriff on the depot porch"
+        },
         "onComplete": {
           "coins": 25,
           "fact": "brasscap.mesa"
+        },
+        "startWhen": {
+          "all": [
+            "brasscap.sheriff.met"
+          ]
         },
         "steps": [
           {

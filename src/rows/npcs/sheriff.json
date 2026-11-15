@@ -1,0 +1,90 @@
+{
+  "npc": {
+    "dialogue": {
+      "id": "brasscap.sheriff",
+      "name": "Sheriff Brass",
+      "nodes": [
+        {
+          "choices": [
+            {
+              "id": "accept",
+              "label": "I'll clear them.",
+              "next": "camps",
+              "sets": [
+                "brasscap.sheriff.met"
+              ]
+            }
+          ],
+          "id": "offer",
+          "lines": [
+            "Easy, stranger. Name's Brass: I keep the peace in this canyon, or I did.",
+            "Tin bandits hold three camps down the trail, and they shoot back now. Past the gate, the Dust Wyrm.",
+            "You've got a lever-action in your hands. Clear the camps, and I'll open the gate for you."
+          ]
+        },
+        {
+          "choices": [
+            {
+              "id": "camp-1",
+              "label": "Camp 1 is clear.",
+              "next": "gate",
+              "when": {
+                "all": [
+                  "dead:bandit.camp-1.1",
+                  "dead:bandit.camp-1.2",
+                  "dead:bandit.camp-1.3"
+                ]
+              }
+            }
+          ],
+          "id": "camps",
+          "lines": [
+            "Camp 1 sits by the west wall. Mind their pistols: they draw, then fire. Step aside when they draw.",
+            "The rack behind me restocks your rounds. There's an ammo box at every camp."
+          ]
+        },
+        {
+          "choices": [
+            {
+              "id": "wyrm",
+              "label": "The Dust Wyrm is dead.",
+              "next": "thanks",
+              "sets": [
+                "brasscap.sheriff.reported"
+              ],
+              "when": {
+                "all": [
+                  "dead:dust-wyrm"
+                ]
+              }
+            }
+          ],
+          "id": "gate",
+          "lines": [
+            "Good shooting. Two marksmen hold the ledge at camp 2: they take their time, so don't stand still.",
+            "Clear camp 3 and the gate opens. Their rushers wait past it, and so does the Wyrm. Shoot its gullet when it glows."
+          ]
+        },
+        {
+          "choices": [],
+          "id": "thanks",
+          "lines": [
+            "The Wyrm, dead. The mesa owes you, stranger, and so do I. The bounty's yours."
+          ]
+        }
+      ],
+      "start": "offer"
+    },
+    "talk": {
+      "at": [
+        0.0,
+        0.25,
+        0.6
+      ],
+      "dialogue": "brasscap.sheriff",
+      "id": "brasscap.sheriff.talk",
+      "label": "Talk to Sheriff Brass",
+      "radius": 2.5
+    }
+  }
+}

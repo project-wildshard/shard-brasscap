@@ -22,6 +22,7 @@ import loot from './rows/economy/loot.json' with { type: 'json' };
 import look from './rows/look/look.json' with { type: 'json' };
 import looks from './rows/look/materials.json' with { type: 'json' };
 import quests from './rows/quests/quests.json' with { type: 'json' };
+import sheriff from './rows/npcs/sheriff.json' with { type: 'json' };
 import clientScripts from './rows/sim/client-scripts.json' with { type: 'json' };
 import hooks from './rows/sim/hooks.json' with { type: 'json' };
 import plumbing from './rows/sim/plumbing.json' with { type: 'json' };
@@ -47,14 +48,17 @@ const SUBJECTS = ['sources/rifle.glb', 'sources/bandit.glb', 'sources/wyrm.glb',
  * panel row goes (the scene's rack has no rifle on it to hide; the rack's interaction still hands the lever-action over).
  */
 function gameplay(shard: Shardfile): Shardfile {
-  const targets = { ...ui.targets, panels: ui.targets.panels.filter((row) => row.panel !== 'brasscap.rack.rifle') };
+  // one file per NPC (J361): rows/npcs/<name>.json holds its dialogue and its talk target
+  const npcs = [sheriff.npc];
+  const targets = { ...ui.targets, panels: ui.targets.panels.filter((row) => row.panel !== 'brasscap.rack.rifle'), talks: npcs.map((npc) => npc.talk) };
+  const story = { quests: { ...quests.quests, dialogue: [...quests.quests.dialogue, ...npcs.map((npc) => npc.dialogue)] } };
   const library = shard.budgets.library;
   // the bandit's eye and the Wyrm's gullet glow: their skins bind look material `glow`, the data shard's emissive
   const families = shard.look.families.includes('emissive') ? shard.look.families : [...shard.look.families, 'emissive' as const];
   return {
     ...shard,
     look: { ...shard.look, families, materials: { ...shard.look.materials, glow: look.look.materials.glow } },
-    ...creatures, ...crowds, ...audio, ...encounters, ...items, ...ledger, ...quests, ...clientScripts, ...hooks, ...plumbing,
+    ...creatures, ...crowds, ...audio, ...encounters, ...items, ...ledger, ...story, ...clientScripts, ...hooks, ...plumbing,
     ...sim, ...migrations, ...state, ...card, ...ui, targets, ...movers, ...traversal,
     files: [...shard.files, ...authored.files], library: [...shard.library, ...authored.library], critical: [...shard.critical, ...authored.critical],
     budgets: { ...shard.budgets, library: { resident: library.resident + authored.budgets.library.resident, compressed: library.compressed + authored.budgets.library.compressed } },

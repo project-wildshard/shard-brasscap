@@ -59,3 +59,11 @@ So the fixes are engine first (TC-E1a to TC-E1d), then rows.
   sand ring and opens the gullet after, as the burst did. The pinned sdk's decision compiler builds it (35 of 100 lines).
 - A grid data cell's ledger only hears `quest.complete` (engine `grid/durability.ts`), so the boss achievement is a
   bounty: "Wanted: the Dust Wyrm" starts when the gate opens and pays 20 coins and the `brasscap.wyrm` fact on its death.
+
+## TC-B6: Sheriff Brass gives the quest (opus-brassgun2, 2026-11-15)
+
+- One file per NPC (J361): `rows/npcs/sheriff.json` holds his dialogue and talk target; `shard.config.ts` merges every
+  NPC file into `quests.dialogue` and `targets.talks`.
+- He stands on the porch facing the spawn (the scene's `cowboy` figure, part `folk`). The main quest waits for his talk
+  (`startWhen: brasscap.sheriff.met`; its `intro` points at him). His lines follow the quest: the offer, camp tips once
+  camp 1 falls, and his thanks once the Dust Wyrm is dead (that choice sets `brasscap.sheriff.reported`).
