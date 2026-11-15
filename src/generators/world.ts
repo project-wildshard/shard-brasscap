@@ -282,9 +282,10 @@ function shootTarget(b: Batch, x: number, z: number): void {
 }
 
 // Lift the last n parts of a batch by dy (used for props set on the camp 2 ledge).
-function liftLast(b: Batch, n: number, dy: number): void {
+/** Lift the last `n` batched parts by `dy`, and the last `solids` colliders with them (a campfire adds none). */
+function liftLast(b: Batch, n: number, dy: number, solids = 1): void {
   for (const g of b.parts.slice(-n)) g.translate(0, dy, 0);
-  for (const c of colliders.slice(-1)) c.y += dy;
+  if (solids > 0) for (const c of colliders.slice(-solids)) c.y += dy;
 }
 
 /** The depot, trail, camps, gate and scatter (the cleanroom's `makeWorld` after its sky, ground and canyon): one props
@@ -392,7 +393,8 @@ function town(props: THREE.Group, dyn: THREE.Group, signs: THREE.Group, gate: TH
   // ladder up the west face
   for (const k of [-1, 1]) b.add(box(0.12, 7.2, 0.12, PAL.woodDark, 9.55, 3.4, -28.4 + k * 0.32, 0, { rz: 0.16 }));
   for (let i = 0; i < 11; i++) b.add(box(0.08, 0.08, 0.66, PAL.wood, 9.38 + i * 0.105, 0.5 + i * 0.62, -28.4));
-  const ledgeFire = campfire(b, fireMat, 15.5, -32); dyn.add(ledgeFire); liftLast(b, 12, LY); ledgeFire.position.y = LY;
+  // the campfire adds no collider: lifting one would lift the ledge barrel's (already at LY) a second time
+  const ledgeFire = campfire(b, fireMat, 15.5, -32); dyn.add(ledgeFire); liftLast(b, 12, LY, 0); ledgeFire.position.y = LY;
   // ----- Camp 3 (18.4, -50.5) in the side canyon -----
   dyn.add(tent(b, glowMat, 22, -48.5, -2.1, 1.05));
   dyn.add(campfire(b, fireMat, 17, -52.5));
