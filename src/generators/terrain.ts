@@ -7,6 +7,9 @@ import { fbm, noise2 } from './util';
 /** Trail centre line (x as a function of z): depot to the sand pit. */
 export const trailX = (z: number): number => 1 + Math.sin(z * 0.045) * 2.5 + (z < -60 ? 1 : 0);
 
+/** The sand fades to road height between these radii (m): flat past 195, inside every entry's 50 m walk. */
+export const EDGE_FADE = [150, 195] as const;
+
 /** Height of the sand at (x, z): gentle dunes, a smooth trail, and the wyrm's bowl. */
 export function groundY(x: number, z: number): number {
   let y = (fbm(x * 0.05, z * 0.05) - 0.5) * 0.9 + (noise2(x * 0.3, z * 0.3) - 0.5) * 0.12;
@@ -15,8 +18,9 @@ export function groundY(x: number, z: number): number {
   const pr = Math.hypot(x - 2, z + 100);
   if (pr < 16) y -= (1 - pr / 16) ** 2 * 1.4;
   if (Math.hypot(x + 1.6, z - 2) < 9) y *= 0.2;
-  // the cell edge stays at road height for its entryways (the cleanroom's sand ran on past the horizon mesas)
-  y *= 1 - THREE.MathUtils.smoothstep(Math.hypot(x, z), 190, 230);
+  // the cell edge stays at road height for its entryways (the cleanroom's sand ran on past the horizon mesas): an engine
+  // walks each entry 50 m in from the edge (x or z 199.6 to 249.6) and refuses feet more than 0.15 m off road height
+  y *= 1 - THREE.MathUtils.smoothstep(Math.hypot(x, z), EDGE_FADE[0], EDGE_FADE[1]);
   return y;
 }
 

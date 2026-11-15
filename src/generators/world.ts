@@ -5,7 +5,7 @@
 // - the sky dome is TSL (`sky.ts`); the PMREM environment is the engine's, filtered from that dome over the sand-lit floor;
 // - the cleanroom's `colliders` list is one invisible solid box each (part `colliders`);
 // - the horizon mesas ring at 150 to 195 m round (0, -50) (the cleanroom's 150 to 320): a shard's parts stay in its cell,
-//   and a mesa over one of the cell's four entryways is left out; the sand flattens to road height past 190 m;
+//   and a mesa over one of the cell's four entryways is left out; the sand flattens to road height past 195 m (from 150);
 // - the creatures are the shard's live ones (`shard.config.ts`: the tin bandits, targets and the Dust Wyrm from the data
 //   shard's rows and GLBs), not the cleanroom's posed meshes; `actors.ts` keeps those poses for stage 6 (AP23, creatures
 //   from code); the gate starts shut and the Wyrm under the sand, as the cleanroom's default shot;
