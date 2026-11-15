@@ -42,6 +42,45 @@
         "turnRate": 1.6,
         "wanderEveryTicks": 600,
         "wanderRadius": 0
+      },
+      {
+        "fallDrop": 1.5,
+        "grazeSpeed": 1.2,
+        "id": "brasscap.wyrmling.ram",
+        "kind": "ram-grazer",
+        "levelTolerance": 2.5,
+        "noticeRadius": 10,
+        "ramSpeed": 8,
+        "rampRate": 4,
+        "rimMargin": 2.5,
+        "strike": "brasscap.wyrmling.ram",
+        "threatSpeed": 1.6,
+        "wanderMaxSeconds": 5,
+        "wanderMinSeconds": 2
+      },
+      {
+        "alignRadius": 3,
+        "alignTolerance": 1.6,
+        "circleSpeed": 7,
+        "diveSpeed": 15,
+        "giveUpRadius": 45,
+        "hangAltitude": 9,
+        "home": {
+          "r": 12,
+          "x": 0,
+          "y": 9,
+          "z": -42
+        },
+        "id": "brasscap.drake.dive",
+        "initialRestSeconds": 3,
+        "kind": "orbit-diver",
+        "noticeRadius": 30,
+        "restSeconds": 6,
+        "riseMargin": 2,
+        "stalkMaxSeconds": 10,
+        "stalkSpeed": 9,
+        "strike": "brasscap.drake.dive",
+        "targetHeight": 1.2
       }
     ],
     "groups": [
@@ -311,6 +350,111 @@
         "strike": null,
         "variant": "rusher",
         "yaw": 3.14159
+      },
+      {
+        "at": [
+          -3,
+          0,
+          -19
+        ],
+        "brain": "brasscap.wyrmling.ram",
+        "home": {
+          "r": 5,
+          "x": -3,
+          "y": 0,
+          "z": -19
+        },
+        "id": "wyrmling.1",
+        "scale": 1,
+        "seed": 71,
+        "species": "brasscap.wyrmling",
+        "strike": null,
+        "variant": "dust",
+        "yaw": 0
+      },
+      {
+        "at": [
+          6,
+          0,
+          -44
+        ],
+        "brain": "brasscap.wyrmling.ram",
+        "home": {
+          "r": 5,
+          "x": 6,
+          "y": 0,
+          "z": -44
+        },
+        "id": "wyrmling.2",
+        "scale": 1,
+        "seed": 72,
+        "species": "brasscap.wyrmling",
+        "strike": null,
+        "variant": "dust",
+        "yaw": 0
+      },
+      {
+        "at": [
+          -5,
+          0,
+          -47
+        ],
+        "brain": "brasscap.wyrmling.ram",
+        "home": {
+          "r": 5,
+          "x": -5,
+          "y": 0,
+          "z": -47
+        },
+        "id": "wyrmling.3",
+        "scale": 1,
+        "seed": 73,
+        "species": "brasscap.wyrmling",
+        "strike": null,
+        "variant": "dust",
+        "yaw": 0
+      },
+      {
+        "at": [
+          -4,
+          9,
+          -38
+        ],
+        "brain": "brasscap.drake.dive",
+        "home": {
+          "r": 12,
+          "x": 0,
+          "y": 9,
+          "z": -42
+        },
+        "id": "drake.1",
+        "scale": 1,
+        "seed": 81,
+        "species": "brasscap.drake",
+        "strike": null,
+        "variant": "dust",
+        "yaw": 0
+      },
+      {
+        "at": [
+          5,
+          9,
+          -46
+        ],
+        "brain": "brasscap.drake.dive",
+        "home": {
+          "r": 12,
+          "x": 0,
+          "y": 9,
+          "z": -42
+        },
+        "id": "drake.2",
+        "scale": 1,
+        "seed": 82,
+        "species": "brasscap.drake",
+        "strike": null,
+        "variant": "dust",
+        "yaw": 0
       },
       {
         "at": [

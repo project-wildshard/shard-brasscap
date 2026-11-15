@@ -40,6 +40,24 @@
         "windup": 1.1
       },
       {
+        "active": 1.1,
+        "cooldown": 5,
+        "damage": 10,
+        "id": "brasscap.drake.dive",
+        "range": 14,
+        "recover": 0.6,
+        "shape": {
+          "kind": "sphere",
+          "radius": 1.9
+        },
+        "speed": 0,
+        "tags": [
+          "creature.bear"
+        ],
+        "weight": 1,
+        "windup": 1.1
+      },
+      {
         "active": 0.2,
         "cooldown": 0.5,
         "damage": 20,
@@ -56,6 +74,25 @@
         ],
         "weight": 3,
         "windup": 1.2
+      },
+      {
+        "active": 0.5,
+        "cooldown": 3,
+        "damage": 10,
+        "id": "brasscap.wyrmling.ram",
+        "range": 6,
+        "recover": 0.9,
+        "shape": {
+          "kind": "lane",
+          "length": 5,
+          "width": 1.4
+        },
+        "speed": 8,
+        "tags": [
+          "creature.bear"
+        ],
+        "weight": 1,
+        "windup": 0.8
       }
     ]
   }

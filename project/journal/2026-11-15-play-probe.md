@@ -42,3 +42,12 @@ So the fixes are engine first (TC-E1a to TC-E1d), then rows.
   TC-B4 from a diver.
 - Every skinned body is bound in client scripts (an empty sand-module binding, no pose, no emitters), so a grid data cell
   draws it (J342, Mossgate's way). The tin target posts use `engine.sphere`, which has no neighbour view yet.
+
+## TC-B4a: two more hostile species (opus-brassgun2, 2026-11-15)
+
+- Dust wyrmlings (30 hp, 3 on the trail) ram: a `ram-grazer` brain and a 5 m lane charge at 8 m/s, 10 damage. Sand drakes
+  (40 hp, 2 over the camps) circle at 9 m and dive: an `orbit-diver` brain and a 1.9 m sphere, 10 damage. Both wear the
+  Dust Wyrm's skin, scaled down (no new art, J357).
+- Brasscap now has 4 hostile species (bandit, wyrmling, drake, Dust Wyrm), 21 bodies and 3 brain kinds (`pursue`,
+  `ram-grazer`, `orbit-diver`), plus the rusher pack.
+- Respawn waits on engine: a data shard's `creatures.spawns` never come back (only native runtime homes refill).

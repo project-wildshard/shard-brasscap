@@ -56,6 +56,36 @@
         },
         "recipe": "platform.skin",
         "species": "brasscap.wyrm"
+      },
+      {
+        "animation": {
+          "parameters": {
+            "attackSpan": 0.7
+          },
+          "recipe": "platform.clips"
+        },
+        "id": "brasscap.wyrmling.look",
+        "material": null,
+        "parameters": {
+          "skin": "eaca25036cc30b1cbece326d11b2ceceee1254d7fa72d4141984d16f992af6d5"
+        },
+        "recipe": "platform.skin",
+        "species": "brasscap.wyrmling"
+      },
+      {
+        "animation": {
+          "parameters": {
+            "attackSpan": 0.7
+          },
+          "recipe": "platform.clips"
+        },
+        "id": "brasscap.drake.look",
+        "material": null,
+        "parameters": {
+          "skin": "eaca25036cc30b1cbece326d11b2ceceee1254d7fa72d4141984d16f992af6d5"
+        },
+        "recipe": "platform.skin",
+        "species": "brasscap.drake"
       }
     ]
   }
