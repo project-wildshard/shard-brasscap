@@ -24,7 +24,11 @@
       "brasscap.camp-1.paid",
       "brasscap.camp-2.paid",
       "brasscap.camp-3.paid",
-      "brasscap.strongbox.paid"
+      "brasscap.strongbox.paid",
+      "dead:bandit.rusher.1",
+      "dead:bandit.rusher.2",
+      "dead:bandit.rusher.3",
+      "dead:bandit.rusher.4"
     ],
     "quests": [
       {
@@ -75,14 +79,14 @@
                 "dead:dust-wyrm"
               ]
             },
-            "hint": "Press E at the rack, then shoot a target post",
+            "hint": "Aim with the right mouse button, fire with the left",
             "id": "rifle",
             "markers": [
               {
                 "at": {
                   "poi": "world",
-                  "x": -2.2,
-                  "z": -0.92
+                  "x": 2.5,
+                  "z": -9.9
                 },
                 "hideWhen": {
                   "any": [
@@ -101,11 +105,11 @@
                   ]
                 },
                 "id": "rifle.marker",
-                "label": "Rifle rack",
-                "short": "Rack"
+                "label": "Target posts",
+                "short": "Targets"
               }
             ],
-            "objective": "Take the lever-action from the depot rack and try it on a target"
+            "objective": "Try the lever-action on a target post"
           },
           {
             "chip": "Camp 1",
@@ -121,6 +125,7 @@
                 "dead:bandit.camp-1.3"
               ]
             },
+            "hint": "They draw before they fire: step aside",
             "id": "camp-1",
             "markers": [
               {
@@ -157,6 +162,7 @@
                 "dead:bandit.camp-2.3"
               ]
             },
+            "hint": "Two marksmen on the ledge: keep moving",
             "id": "camp-2",
             "markers": [
               {
@@ -193,6 +199,7 @@
                 "dead:bandit.camp-3.3"
               ]
             },
+            "hint": "The strongbox behind the camp restocks your rounds",
             "id": "camp-3",
             "markers": [
               {
@@ -214,6 +221,74 @@
               }
             ],
             "objective": "Clear the camp by the gate"
+          },
+          {
+            "chip": "Gate",
+            "done": {
+              "all": [
+                "brasscap.gate.open"
+              ]
+            },
+            "hint": "It opens once camp 3 falls",
+            "id": "gate",
+            "markers": [
+              {
+                "at": {
+                  "poi": "world",
+                  "x": 2,
+                  "z": -62
+                },
+                "hideWhen": {
+                  "all": [
+                    "brasscap.gate.open"
+                  ]
+                },
+                "id": "gate.marker",
+                "label": "Canyon gate",
+                "short": "Gate"
+              }
+            ],
+            "objective": "Go through the canyon gate"
+          },
+          {
+            "chip": "Rushers",
+            "count": [
+              "dead:bandit.rusher.1",
+              "dead:bandit.rusher.2",
+              "dead:bandit.rusher.3",
+              "dead:bandit.rusher.4"
+            ],
+            "done": {
+              "all": [
+                "dead:bandit.rusher.1",
+                "dead:bandit.rusher.2",
+                "dead:bandit.rusher.3",
+                "dead:bandit.rusher.4"
+              ]
+            },
+            "hint": "They circle, then rush: shoot the one that runs in",
+            "id": "rushers",
+            "markers": [
+              {
+                "at": {
+                  "poi": "world",
+                  "x": 3.5,
+                  "z": -76.5
+                },
+                "hideWhen": {
+                  "all": [
+                    "dead:bandit.rusher.1",
+                    "dead:bandit.rusher.2",
+                    "dead:bandit.rusher.3",
+                    "dead:bandit.rusher.4"
+                  ]
+                },
+                "id": "rushers.marker",
+                "label": "Rusher hollow",
+                "short": "Rushers"
+              }
+            ],
+            "objective": "Stop the bandit rushers past the gate"
           },
           {
             "chip": "Dust Wyrm",
@@ -242,6 +317,34 @@
               }
             ],
             "objective": "Beat the Dust Wyrm in the sand pit"
+          },
+          {
+            "chip": "Report",
+            "done": {
+              "all": [
+                "brasscap.sheriff.reported"
+              ]
+            },
+            "hint": "Talk to him on the depot porch",
+            "id": "report",
+            "markers": [
+              {
+                "at": {
+                  "poi": "world",
+                  "x": 0,
+                  "z": 0.6
+                },
+                "hideWhen": {
+                  "all": [
+                    "brasscap.sheriff.reported"
+                  ]
+                },
+                "id": "report.marker",
+                "label": "Sheriff Brass",
+                "short": "Sheriff"
+              }
+            ],
+            "objective": "Tell Sheriff Brass the Wyrm is dead"
           }
         ],
         "title": "Brasscap Mesa"

@@ -77,3 +77,10 @@ So the fixes are engine first (TC-E1a to TC-E1d), then rows.
 - Each camp pays a 5-coin bounty when its third bandit falls (untracked quests).
 - Still open (TC-B7b): the lever by the gate and a moving side door. A mover row needs a baked hinge module
   (`MoverBakeSchema`, driver `hinge`), which this source has no step for yet.
+
+## TC-B8: the quest and the map at the bar (opus-brassgun2, 2026-11-15)
+
+- "Brasscap Mesa" now has 8 steps, each with a marker and a hint: the target posts, camps 1 to 3, the canyon gate, the
+  rusher pack (a 0 to 4 count), the Dust Wyrm and the report back to Sheriff Brass. His talk starts it (TC-B6).
+- Two achievements: the quest's `brasscap.mesa` and the bounty's `brasscap.wyrm` (TC-B5).
+- 9 POIs in `manifest.json`: depot, target range, the three camps, strongbox, gate, rusher hollow and the Wyrm's pit.
