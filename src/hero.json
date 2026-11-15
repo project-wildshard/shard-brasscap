@@ -1,10 +1,10 @@
 {
-  "content": "adcafc0962c72764be31d2dacf75e6efac81100a0dd6a31c0e60b9ec96e46e0f",
-  "captured": "2026-11-14T07:36:15.496Z",
-  "base": "stamp-existing: the hero files already in the shard, adopted without a capture",
+  "content": "a4225ee493eb3f2339dd60d218237069169969ff071dca3a8769cd73c2012320",
+  "captured": "2026-11-15T20:37:45.542Z",
+  "base": "http://127.0.0.1:50296",
   "card": {
-    "thumbs/brasscap-mesa.jpg": "0579557f9344df6f2c4b1225e6252e53ab86d417a4c9b504b5c714a08a388e47",
-    "thumbs/brasscap-mesa-portrait.jpg": "eb453c71cfb1f9441eb00b32281f98e226e49d9dcf75c231455575fcdc652222",
-    "thumbs/brasscap-mesa-landscape.jpg": "9e18816a2ec16fbbb1f00f4a39c73ac2cbf6a8cdc17b4c96b1eba4cc9a754dc7"
+    "thumbs/brasscap-mesa.jpg": "48178e4cd641ec15147f83e72eed5ebeff4db60fbfcf5d6aba1a3e94bd8713d9",
+    "thumbs/brasscap-mesa-portrait.jpg": "3be566f9bc71e066e8aedf99b52726e94d26b9916cbee68768505f14b17bb433",
+    "thumbs/brasscap-mesa-landscape.jpg": "6af770e1de99182f6f2cb4172b81be2947311497234952bb1b8c1d276820b7f3"
   }
 }
