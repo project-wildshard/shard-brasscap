@@ -9,3 +9,8 @@ lip, the only place a chest-high sightline clears the ledge down to the trail.
 
 The sand drakes' removal (TC-B11) left two brain kinds and three armed species. The bandit brawler at camp 3 (its own
 species on the bandit skin, 60 hp) is a `challenge-grazer`: a 7 m lane tackle and a 2.6 m arc club. It pays 6 to 10 coins.
+
+The probe's `kill:` aimed at the nearest drawn bandit, and a grid body carries no hp on the page, so on staging it spent
+110 shots on a corpse. Eight hits with no confirmed kill now mark that spot a corpse and it turns to the next body; it
+reloads when the tube runs dry. With that, staging serial 92 wiped camp 1 (bounty paid, `owned.coins` 0 to 11) and
+killed a marksman.

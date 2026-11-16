@@ -11,7 +11,7 @@
 //
 // Steps: `wait:<s>`, `face:<x>,<z>[,<y>]` (and pitch to height y), `shot:<name>` (a screenshot), `fire[:<n>]` (left click n times, one cycle apart), `reload`, `slot:<n>` (press digit n), `use` (E),
 // `aim:<creature kind>` (turn to face the nearest one alive), `walk:<x>,<z>` (hold W toward a point of the cell's frame),
-// `kill:<creature kind>` (walk within 25 m, aim and fire until it dies or 30 s pass), `shoot:<kind>` (aim, then fire once).
+// `kill:<creature kind>` (walk within 25 m, aim and fire until it dies or 45 s pass; 8 hits with no kill mark a drawn corpse, skipped after), `shoot:<kind>` (aim, then fire once).
 // Default site: a local preview at http://127.0.0.1:5173 (`--base`); `--staging` is https://staging.wildshard.io. Never
 // production (J205): a join is a write. Chromium runs headless, muted, capped at 60 fps, and the page closes at the end.
 import { mkdirSync, writeFileSync } from 'node:fs';
@@ -171,14 +171,20 @@ async function walk(page, x, z, stop = 2, ms = 90_000) {
 
 /** The nearest live creature of a kind, in the cell's frame: the regional world's, else (a grid cell) the nearest drawn body
  *  whose look names the kind (`body: true`; its life is read from the page's kills, not its hp). */
-const nearest = (page, kind) => page.evaluate((k) => {
+const nearest = (page, kind, corpses = []) => page.evaluate(([k, skip]) => {
   const W = /** @type {any} */ (window), st = W.__wildshard.state(), p = st.player.pos;
   const rows = st.creatures.filter((c) => c.hp > 0 && (c.kind === k || c.id.startsWith(k))).map((c) => ({ ...c, d: Math.hypot(c.pos.x - p.x, c.pos.z - p.z) }));
   if (rows.length === 0) {
-    for (const b of W.__probeBodies?.(W.__wildshard.world, p) ?? []) if (b.shown && b.skin.includes(k)) rows.push({ id: `${b.skin}@${Math.round(b.pos.x)},${Math.round(b.pos.z)}`, kind: k, pos: b.pos, hp: 1, d: b.d, body: true });
+    for (const b of W.__probeBodies?.(W.__wildshard.world, p) ?? []) {
+      if (!b.shown || !b.skin.includes(k) || skip.some((c) => Math.hypot(c.x - b.pos.x, c.z - b.pos.z) < 1)) continue;
+      rows.push({ id: `${b.skin}@${Math.round(b.pos.x)},${Math.round(b.pos.z)}`, kind: k, pos: b.pos, hp: 1, d: b.d, body: true });
+    }
   }
   rows.sort((a, b) => a.d - b.d); return rows[0] ?? null;
-}, kind);
+}, [kind, corpses]);
+/** A drawn body that took this many hits with no confirmed kill is taken for a corpse (a grid body carries no hp on the page). */
+const CORPSE_SHOTS = 8;
+const corpses = [];
 
 /** Aim at a creature's body: yaw toward it, pitch toward its middle. */
 async function aimAt(page, c) {
@@ -216,20 +222,28 @@ async function step(page, name) {
     return { verb, found: true, d: Math.round(c.d) };
   }
   if (verb === 'kill') {
-    const first = await nearest(page, arg); if (first === null) return { verb, found: false };
-    const ends = Date.now() + 45_000; let shots = 0, target = first;
+    const first = await nearest(page, arg, corpses); if (first === null) return { verb, found: false };
+    const ends = Date.now() + 45_000; let shots = 0, onTarget = 0, target = first;
     const kills = () => page.evaluate(() => /** @type {any} */ (window).__workerClient?.()?.kills ?? 0), before = await kills();
     while (Date.now() < ends) {
       // a drawn body has no hp on the page: it is down when this page's confirmed kills grow (or no body of the kind is left)
-      const c = target.body === true ? ((await kills()) > before ? null : await nearest(page, arg))
+      const killed = target.body === true && (await kills()) > before;
+      const c = target.body === true ? (killed ? null : await nearest(page, arg, corpses))
         : await page.evaluate((id) => /** @type {any} */ (window).__wildshard.state().creatures.find((row) => row.id === id) ?? null, target.id);
-      if (c === null || c.hp <= 0) return { verb, found: true, killed: true, shots };
-      if (target.body === true) target = c;
+      if (c === null || c.hp <= 0) return { verb, found: true, killed: killed || target.body !== true, shots, corpses: corpses.length };
+      if (target.body === true) {
+        if (Math.hypot(c.pos.x - target.pos.x, c.pos.z - target.pos.z) > 1) onTarget = 0;
+        target = c;
+        // shots into a body that never falls: a corpse still drawn where it died; aim at the next one
+        if (onTarget >= CORPSE_SHOTS) { corpses.push({ x: c.pos.x, z: c.pos.z }); onTarget = 0; continue; }
+      }
       const d = await page.evaluate((p) => { const at = /** @type {any} */ (window).__wildshard.state().player.pos; return Math.hypot(p.x - at.x, p.z - at.z); }, c.pos);
       if (d > 25) { await walk(page, c.pos.x, c.pos.z, 20, 15_000); continue; }
-      await aimAt(page, c); await fire(page, 1); shots++;
+      const held = await page.evaluate(() => /** @type {any} */ (window).__wildshard.world.weapons.current?.state ?? null);
+      if (held !== null && held.ammo === 0 && held.reserve > 0 && !held.reloading) { await page.keyboard.press('KeyR'); await sleep(2500); continue; }
+      await aimAt(page, c); await fire(page, 1); shots++; onTarget++;
     }
-    return { verb, found: true, killed: false, shots };
+    return { verb, found: true, killed: false, shots, corpses: corpses.length };
   }
   throw new Error(`No probe step ${name}`);
 }
