@@ -88,3 +88,12 @@ So the fixes are engine first (TC-E1a to TC-E1d), then rows.
 ## The Wyrm at the cleanroom size (opus-brassgun2, 2026-11-15)
 
 Jake (Scene Board t2-14): "why does the brasscap boss get soe small bruv". The live Wyrm was the 2.1 m rig at spawn scale 2 on bear dims. Now spawn and variant scale 5 (about 10.5 m to the maw top; the cleanroom's emerge arch tops out near 11 m), dims bodyRadius 0.55, bodyY 1.0, headRadius 0.6 (capsule 2.75 m by 10 m, lock point 8 m up, at the maw). Reach grew with it: burst 7 m (radius 3), sweep 8 m (arc 7), spit wedge 18 m; arena radius 16. From the t2-14 spot (2, -84, yaw 0) the Wyrm fills 51% of the frame height against 56% in the cleanroom's t2-14 ([capture](2026-11-15-wyrm-t2-14.jpg), local dev, spawn moved there for the shot only).
+
+## Ground the fight (TC-B11, evening)
+
+Jake played Brasscap on his iPhone on staging and called it chaos: flying worms, no health bars, shots that
+did not seem to land. The flying worms were the two sand drakes (orbit-divers wearing the Wyrm's skin, one
+hovering at the porch). They are out; the proper Wyrm creature waits for ONE-FORMAT M4 (J367). Wyrmlings
+now spawn at half size (the server and the page both read spawn scale), the one by the first camp moved to
+-62 m, and every camp, wyrmling and the rusher pack notices from closer, so the walk meets one camp at a
+time. Health bars are the engine's half (TC-B10).

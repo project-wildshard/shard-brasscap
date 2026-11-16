@@ -1022,46 +1022,6 @@
           "id": "wyrmling.3",
           "kind": "creature"
         }
-      },
-      {
-        "emitters": [],
-        "entity": 31,
-        "maxOffset": 0,
-        "maxScale": 1,
-        "minScale": 1,
-        "module": "24a4d4c1292677b1c984b5c0d3497ae2929528bf511df475f80cc20945bb08ec",
-        "name": "drake.1.body",
-        "parameters": [
-          0,
-          0,
-          0
-        ],
-        "pose": false,
-        "reads": [],
-        "target": {
-          "id": "drake.1",
-          "kind": "creature"
-        }
-      },
-      {
-        "emitters": [],
-        "entity": 32,
-        "maxOffset": 0,
-        "maxScale": 1,
-        "minScale": 1,
-        "module": "24a4d4c1292677b1c984b5c0d3497ae2929528bf511df475f80cc20945bb08ec",
-        "name": "drake.2.body",
-        "parameters": [
-          0,
-          0,
-          0
-        ],
-        "pose": false,
-        "reads": [],
-        "target": {
-          "id": "drake.2",
-          "kind": "creature"
-        }
       }
     ],
     "divisor": 2

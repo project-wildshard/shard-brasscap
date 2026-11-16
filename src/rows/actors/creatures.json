@@ -17,13 +17,13 @@
       },
       {
         "attackCooldownTicks": 120,
-        "awareRadius": 14,
+        "awareRadius": 10,
         "id": "brasscap.bandit.camp",
         "kind": "pursue",
-        "leashRadius": 18,
+        "leashRadius": 14,
         "returnSpeed": 2,
         "speed": 1.6,
-        "stopDistance": 9,
+        "stopDistance": 7,
         "thinkDivisor": 3,
         "turnRate": 2.5,
         "wanderEveryTicks": 360,
@@ -31,13 +31,13 @@
       },
       {
         "attackCooldownTicks": 180,
-        "awareRadius": 22,
+        "awareRadius": 16,
         "id": "brasscap.bandit.marksman",
         "kind": "pursue",
-        "leashRadius": 22,
+        "leashRadius": 16,
         "returnSpeed": 0.01,
         "speed": 0.01,
-        "stopDistance": 20,
+        "stopDistance": 14,
         "thinkDivisor": 3,
         "turnRate": 1.6,
         "wanderEveryTicks": 600,
@@ -49,7 +49,7 @@
         "id": "brasscap.wyrmling.ram",
         "kind": "ram-grazer",
         "levelTolerance": 2.5,
-        "noticeRadius": 10,
+        "noticeRadius": 7,
         "ramSpeed": 8,
         "rampRate": 4,
         "rimMargin": 2.5,
@@ -57,30 +57,6 @@
         "threatSpeed": 1.6,
         "wanderMaxSeconds": 5,
         "wanderMinSeconds": 2
-      },
-      {
-        "alignRadius": 3,
-        "alignTolerance": 1.6,
-        "circleSpeed": 7,
-        "diveSpeed": 15,
-        "giveUpRadius": 45,
-        "hangAltitude": 9,
-        "home": {
-          "r": 12,
-          "x": 0,
-          "y": 9,
-          "z": -42
-        },
-        "id": "brasscap.drake.dive",
-        "initialRestSeconds": 3,
-        "kind": "orbit-diver",
-        "noticeRadius": 30,
-        "restSeconds": 6,
-        "riseMargin": 2,
-        "stalkMaxSeconds": 10,
-        "stalkSpeed": 9,
-        "strike": "brasscap.drake.dive",
-        "targetHeight": 1.2
       }
     ],
     "groups": [
@@ -92,10 +68,10 @@
         "coneAngle": 1.2,
         "dashSeconds": 1.5,
         "hearing": [
-          4,
-          8,
-          14,
-          24
+          3,
+          6,
+          10,
+          16
         ],
         "home": [
           3.5,
@@ -116,8 +92,8 @@
         "runSpeed": 7.5,
         "shadowMaxRadius": 20,
         "shadowMinRadius": 14,
-        "sightRadius": 26,
-        "smellRadius": 30,
+        "sightRadius": 16,
+        "smellRadius": 18,
         "snarlCue": "bandit_snarl",
         "telegraphSeconds": 0.5,
         "thinkDivisor": 6,
@@ -353,19 +329,19 @@
       },
       {
         "at": [
-          -3,
+          -9,
           0,
-          -19
+          -62
         ],
         "brain": "brasscap.wyrmling.ram",
         "home": {
           "r": 5,
-          "x": -3,
+          "x": -9,
           "y": 0,
-          "z": -19
+          "z": -62
         },
         "id": "wyrmling.1",
-        "scale": 1,
+        "scale": 0.5,
         "seed": 71,
         "species": "brasscap.wyrmling",
         "strike": null,
@@ -386,7 +362,7 @@
           "z": -44
         },
         "id": "wyrmling.2",
-        "scale": 1,
+        "scale": 0.5,
         "seed": 72,
         "species": "brasscap.wyrmling",
         "strike": null,
@@ -407,51 +383,9 @@
           "z": -47
         },
         "id": "wyrmling.3",
-        "scale": 1,
+        "scale": 0.5,
         "seed": 73,
         "species": "brasscap.wyrmling",
-        "strike": null,
-        "variant": "dust",
-        "yaw": 0
-      },
-      {
-        "at": [
-          -4,
-          9,
-          -38
-        ],
-        "brain": "brasscap.drake.dive",
-        "home": {
-          "r": 12,
-          "x": 0,
-          "y": 9,
-          "z": -42
-        },
-        "id": "drake.1",
-        "scale": 1,
-        "seed": 81,
-        "species": "brasscap.drake",
-        "strike": null,
-        "variant": "dust",
-        "yaw": 0
-      },
-      {
-        "at": [
-          5,
-          9,
-          -46
-        ],
-        "brain": "brasscap.drake.dive",
-        "home": {
-          "r": 12,
-          "x": 0,
-          "y": 9,
-          "z": -42
-        },
-        "id": "drake.2",
-        "scale": 1,
-        "seed": 82,
-        "species": "brasscap.drake",
         "strike": null,
         "variant": "dust",
         "yaw": 0
