@@ -6,7 +6,7 @@
 // cell's skinned meshes, shown and in the camera's view, by look), the quest step, the flags and the coins. Steps (`--do`) then act on the world
 // by real input (keys and the mouse) and read again after each, so a content row's done-when is one line of this JSON.
 //
-//   node kit/scripts/play-probe.mjs [--staging | --base=<url>] [--entry=select|road|both] [--layout=desktop|phone]
+//   node kit/scripts/play-probe.mjs [--staging | --base=<url>] [--entry=select|road|slug|chunk|both] [--layout=desktop|phone]
 //     [--do=<step>,<step>...] [--out=<dir>] [--seconds=<budget>] [--browser=chromium|webkit]
 //
 // Steps: `wait:<s>`, `face:<x>,<z>[,<y>]` (and pitch to height y), `shot:<name>` (a screenshot), `fire[:<n>]` (left click n times, one cycle apart), `reload`, `slot:<n>` (press digit n), `use` (E),
@@ -30,7 +30,7 @@ const budget = Number(flag('seconds', '420')) * 1000;
 mkdirSync(out, { recursive: true });
 
 /** Brasscap's cell on the grid catalogue, its card, and its places in the shard's own frame. */
-const CELL = 'blender-template', CARD = 'Brasscap Mesa';
+const CELL = 'blender-template', CARD = 'Brasscap Mesa', SLUG = 'brasscap-mesa';
 const PORCH = { x: -2.2, z: -0.92 }, SPAWN = { x: -1.6, z: 2.6 };
 /** The chrome a review page would also pass (scripts/chromium-keychain.mjs in engine), muted. Headless Chromium draws at its
  *  60 Hz begin-frame clock: the probe never asks for more (no vsync or frame-rate flags). */
@@ -94,6 +94,7 @@ function read({ porch, spawn }) {
 async function enter(page, how) {
   await page.goto(`${base}/?mute=1&nolock=1${how === 'chunk' ? `&chunk=${CELL}` : ''}`, { waitUntil: 'load', timeout: 120_000 });
   if (how === 'chunk') return await ready(page, Date.now());
+  if (how === 'slug') return await slugIn(page);
   await page.locator('.ws-main-select').waitFor({ state: 'visible', timeout: 120_000 });
   const dismiss = page.locator('#wsdrop .dismiss'); if (await dismiss.count() > 0) await dismiss.click();
   await page.locator('.ws-main-select').click();
@@ -109,6 +110,25 @@ async function enter(page, how) {
   await page.locator('.ws-menu-dots i').nth(index).click(); await sleep(500);
   const t0 = Date.now();
   await page.locator('.ws-menu-play').click();
+  return await ready(page, t0);
+}
+
+/** `--entry=slug`: the shard's own page, `/slug/<slug>`, whose deck holds its one card (the Shard Select card can be hidden). */
+async function slugIn(page) {
+  await page.goto(`${base}/slug/${SLUG}?mute=1&nolock=1`, { waitUntil: 'load', timeout: 120_000 });
+  const dismiss = page.locator('#wsdrop .dismiss'); if (await dismiss.count() > 0) await dismiss.click();
+  const main = page.locator('.ws-main-select');
+  if (await main.waitFor({ state: 'visible', timeout: 20_000 }).then(() => true).catch(() => false)) await main.click();
+  if (await page.locator('#ws-name-box input').waitFor({ timeout: 10_000 }).then(() => true).catch(() => false)) {
+    await page.locator('#ws-name-box [data-name=skip]').click().catch(async () => { await page.locator('#ws-name-box button[type=submit]').click(); });
+  }
+  const play = page.locator('.ws-menu-play'); await play.waitFor({ state: 'visible', timeout: 60_000 }); await sleep(600);
+  if (await play.isDisabled()) throw new Error(`The ${SLUG} page's Play is disabled: ${await page.locator('.ws-menu-play small').textContent()}`);
+  const t0 = Date.now(); await play.click();
+  // the slug page asks the player's name after Play, not before
+  if (await page.locator('#ws-name-box input').waitFor({ timeout: 10_000 }).then(() => true).catch(() => false)) {
+    await page.locator('#ws-name-box [data-name=skip]').click().catch(async () => { await page.locator('#ws-name-box button[type=submit]').click(); });
+  }
   return await ready(page, t0);
 }
 
