@@ -11,7 +11,7 @@
 //
 // Steps: `wait:<s>`, `find:<name>` (drawn objects by name, with world positions), `face:<x>,<z>[,<y>]` (and pitch to height y), `shot:<name>` (a screenshot), `fire[:<n>]` (left click n times, one cycle apart), `reload`, `slot:<n>` (press digit n), `use` (E),
 // `aim:<creature kind>` (turn to face the nearest one alive), `walk:<x>,<z>` (hold W toward a point of the cell's frame),
-// `kill:<creature kind>` (walk within 25 m, aim and fire until it dies or 45 s pass; 8 hits with no kill mark a drawn corpse, skipped after), `shoot:<kind>` (aim, then fire once).
+// `kill:<creature kind>[@<aim height>]` (walk within 25 m, aim and fire until it dies or 45 s pass; 8 hits with no kill mark a drawn corpse, skipped after), `shoot:<kind>` (aim, then fire once).
 // Default site: a local preview at http://127.0.0.1:5173 (`--base`); `--staging` is https://staging.wildshard.io. Never
 // production (J205): a join is a write. Chromium runs headless, muted, capped at 60 fps, and the page closes at the end.
 import { mkdirSync, writeFileSync } from 'node:fs';
@@ -187,10 +187,10 @@ const CORPSE_SHOTS = 8;
 const corpses = [];
 
 /** Aim at a creature's body: yaw toward it, pitch toward its middle. */
-async function aimAt(page, c) {
+async function aimAt(page, c, height = 0.9) {
   const at = await page.evaluate(() => /** @type {any} */ (window).__wildshard.state().player.pos);
   const d = Math.hypot(c.pos.x - at.x, c.pos.z - at.z);
-  await face(page, c.pos.x, c.pos.z, Math.atan2(c.pos.y + 0.9 - (at.y + 1.68), Math.max(d, 0.1)));
+  await face(page, c.pos.x, c.pos.z, Math.atan2(c.pos.y + height - (at.y + 1.68), Math.max(d, 0.1)));
 }
 
 async function fire(page, n = 1) {
@@ -219,7 +219,10 @@ async function step(page, name) {
     const rows = await page.evaluate((name) => {
       const out = []; /** @type {any} */ (window).__wildshard.world.game.scene.traverse((o) => {
         if (typeof o.name !== 'string' || !o.name.includes(name)) return;
-        const p = o.getWorldPosition(o.position.clone()); out.push({ name: o.name, visible: o.visible, x: Math.round(p.x * 100) / 100, y: Math.round(p.y * 100) / 100, z: Math.round(p.z * 100) / 100 });
+        const p = o.getWorldPosition(o.position.clone()), box = new p.constructor(), lo = p.clone(), hi = p.clone(); let any = false;
+        o.traverse((m) => { if (m.geometry === undefined) return; m.geometry.computeBoundingBox?.(); const b = m.geometry.boundingBox; if (b === null || b === undefined) return; for (const c of [b.min, b.max]) { box.copy(c).applyMatrix4(m.matrixWorld); if (!any) { lo.copy(box); hi.copy(box); any = true; } else { lo.min(box); hi.max(box); } } });
+        const r = (v) => Math.round(v * 100) / 100;
+        out.push({ name: o.name, visible: o.visible, x: r(p.x), y: r(p.y), z: r(p.z), ...(any ? { minY: r(lo.y), maxY: r(hi.y) } : {}) });
       });
       return out.slice(0, 8);
     }, arg);
@@ -233,13 +236,15 @@ async function step(page, name) {
     return { verb, found: true, d: Math.round(c.d) };
   }
   if (verb === 'kill') {
-    const first = await nearest(page, arg, corpses); if (first === null) return { verb, found: false };
+    // `kill:<kind>@<h>`: aim <h> m over its feet (default 0.9; a small body's hit volume sits lower than its drawn skin)
+    const [kind = arg, h = '0.9'] = arg.split('@'), height = Number(h);
+    const first = await nearest(page, kind, corpses); if (first === null) return { verb, found: false };
     const ends = Date.now() + 45_000; let shots = 0, onTarget = 0, target = first;
     const kills = () => page.evaluate(() => /** @type {any} */ (window).__workerClient?.()?.kills ?? 0), before = await kills();
     while (Date.now() < ends) {
       // a drawn body has no hp on the page: it is down when this page's confirmed kills grow (or no body of the kind is left)
       const killed = target.body === true && (await kills()) > before;
-      const c = target.body === true ? (killed ? null : await nearest(page, arg, corpses))
+      const c = target.body === true ? (killed ? null : await nearest(page, kind, corpses))
         : await page.evaluate((id) => /** @type {any} */ (window).__wildshard.state().creatures.find((row) => row.id === id) ?? null, target.id);
       if (c === null || c.hp <= 0) return { verb, found: true, killed: killed || target.body !== true, shots, corpses: corpses.length };
       if (target.body === true) {
@@ -253,7 +258,7 @@ async function step(page, name) {
       const held = await page.evaluate(() => /** @type {any} */ (window).__wildshard.world.weapons.current?.state ?? null);
       if (held !== null && held.ammo === 0 && held.reserve > 0 && !held.reloading) { await page.keyboard.press('KeyR'); await sleep(2500); continue; }
       // aim down the sights (right button held): the lever's hip spread is 0.9, its sights' 0
-      await aimAt(page, c); await page.mouse.down({ button: 'right' }); await sleep(250); await fire(page, 1); await page.mouse.up({ button: 'right' }); shots++; onTarget++;
+      await aimAt(page, c, height); await page.mouse.down({ button: 'right' }); await sleep(250); await fire(page, 1); await page.mouse.up({ button: 'right' }); shots++; onTarget++;
     }
     return { verb, found: true, killed: false, shots, corpses: corpses.length };
   }
