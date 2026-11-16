@@ -166,9 +166,9 @@
       {
         "aggressive": true,
         "dims": {
-          "bodyHalfLen": 0.4,
-          "bodyRadius": 0.45,
-          "bodyY": 0.5,
+          "bodyHalfLen": 0.2,
+          "bodyRadius": 1.05,
+          "bodyY": 1.1,
           "feet": [],
           "halfWidth": 0.45,
           "headRadius": 0.36,
