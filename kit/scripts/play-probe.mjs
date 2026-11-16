@@ -7,7 +7,7 @@
 // by real input (keys and the mouse) and read again after each, so a content row's done-when is one line of this JSON.
 //
 //   node kit/scripts/play-probe.mjs [--staging | --base=<url>] [--entry=select|road|both] [--layout=desktop|phone]
-//     [--do=<step>,<step>...] [--out=<dir>] [--seconds=<budget>]
+//     [--do=<step>,<step>...] [--out=<dir>] [--seconds=<budget>] [--browser=chromium|webkit]
 //
 // Steps: `wait:<s>`, `face:<x>,<z>[,<y>]` (and pitch to height y), `shot:<name>` (a screenshot), `fire[:<n>]` (left click n times, one cycle apart), `reload`, `slot:<n>` (press digit n), `use` (E),
 // `aim:<creature kind>` (turn to face the nearest one alive), `walk:<x>,<z>` (hold W toward a point of the cell's frame),
@@ -16,7 +16,7 @@
 // production (J205): a join is a write. Chromium runs headless, muted, capped at 60 fps, and the page closes at the end.
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
-import { chromium } from 'playwright';
+import { chromium, webkit } from 'playwright';
 import { saveFixture } from '@wildshard/engine/scripts/debug-settings.mjs';
 
 const flag = (name, fallback) => process.argv.find((arg) => arg.startsWith(`--${name}=`))?.slice(name.length + 3) ?? fallback;
@@ -84,6 +84,10 @@ function read({ porch, spawn }) {
     quest: wire?.quests ?? st.quest, flags: wire?.flags ?? area?.flags ?? [], coins: wire?.paid ?? null, owned: wire?.owned ?? null,
     wire: wire === undefined ? null : { rows: wire.rows, drawn: wire.drawn, hits: wire.hits, kills: wire.kills, hp: wire.hp, fights: wire.fights, cell: wire.cell },
     prompt: world.hud?.promptText ?? null, frames: wire?.frames ?? null,
+    // TC-B10: the health bars on screen (engine ui/Combat.ts): each shown bar's label and its fill, and the damage numbers up
+    bars: [...document.querySelectorAll('.ws-combat-hp.show')].map((el) => ({ label: el.querySelector('.ws-combat-hp-kind')?.textContent ?? '',
+      fill: Number(/scaleX\(([\d.]+)\)/u.exec(el.querySelector('.ws-combat-hp-fill')?.style.transform ?? '')?.[1] ?? 1), dead: el.classList.contains('dead') })),
+    floats: [...document.querySelectorAll('.ws-combat-float.show')].map((el) => el.textContent ?? ''),
   };
 }
 
@@ -235,7 +239,9 @@ async function roadIn(page) {
 }
 
 const report = { probe: 'brasscap play-probe', base, layout: phone ? 'phone 402x874' : 'desktop 1400x933', at: new Date().toISOString(), runs: [] };
-const browser = await chromium.launch({ headless: true, args: ARGS });
+// `--browser=webkit`: the iPhone's engine (Safari is WebKit), headless; it takes none of Chromium's flags (WebKit has no keychain prompt)
+const engine = flag('browser', 'chromium'), browser = engine === 'webkit' ? await webkit.launch({ headless: true }) : await chromium.launch({ headless: true, args: ARGS });
+report.browser = engine;
 const killer = setTimeout(() => { console.error('play-probe: over budget'); void browser.close().then(() => process.exit(2)); }, budget);
 try {
   for (const how of entries) {
