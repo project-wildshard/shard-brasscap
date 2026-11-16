@@ -10,11 +10,11 @@
   "packageManager": "pnpm@10.34.9",
   "scripts": {
     "prepare": "git rev-parse --is-inside-work-tree >/dev/null 2>&1 && git config core.hooksPath .githooks || true",
-    "typecheck": "tsc -p tools/tsconfig.json",
-    "lint": "pnpm lint:shard && oxlint -c kit/.oxlintrc.json --type-aware --deny-warnings --ignore-pattern '.githooks/**' --ignore-pattern '.agents/**' --ignore-pattern 'scripts/agent-parity.mjs' --ignore-pattern 'scripts/agent-sync.mjs' --ignore-pattern 'tmp/**' --ignore-pattern 'src/**' --ignore-pattern 'tools/**' --ignore-pattern 'test/**' --ignore-pattern 'public/**' --ignore-pattern 'scripts/**' --no-error-on-unmatched-pattern",
-    "lint:fix": "oxlint -c kit/.oxlintrc.json --type-aware --fix --ignore-pattern '.githooks/**' --ignore-pattern '.agents/**' --ignore-pattern 'scripts/agent-parity.mjs' --ignore-pattern 'scripts/agent-sync.mjs' --ignore-pattern 'tmp/**' --ignore-pattern 'src/**' --ignore-pattern 'test/**' --ignore-pattern 'public/**' --ignore-pattern 'scripts/**' --ignore-pattern 'src/**' --ignore-pattern 'tools/**'",
-    "format": "oxfmt -c kit/.oxfmtrc.json kit '!src/**' '!test/**' '!tools/**' '!.oxlintrc.author.json'",
-    "format:check": "oxfmt -c kit/.oxfmtrc.json --check kit '!src/**' '!test/**' '!tools/**' '!.oxlintrc.author.json'",
+    "typecheck": "npr tsc -p tools/tsconfig.json",
+    "lint": "pnpm lint:shard && node kit/scripts/lint.mjs --type-aware --deny-warnings --ignore-pattern '.githooks/**' --ignore-pattern '.agents/**' --ignore-pattern 'scripts/agent-parity.mjs' --ignore-pattern 'scripts/agent-sync.mjs' --ignore-pattern 'tmp/**' --ignore-pattern 'src/**' --ignore-pattern 'tools/**' --ignore-pattern 'test/**' --ignore-pattern 'public/**' --ignore-pattern 'scripts/**' --no-error-on-unmatched-pattern",
+    "lint:fix": "node kit/scripts/lint.mjs --type-aware --fix --ignore-pattern '.githooks/**' --ignore-pattern '.agents/**' --ignore-pattern 'scripts/agent-parity.mjs' --ignore-pattern 'scripts/agent-sync.mjs' --ignore-pattern 'tmp/**' --ignore-pattern 'src/**' --ignore-pattern 'test/**' --ignore-pattern 'public/**' --ignore-pattern 'scripts/**' --ignore-pattern 'src/**' --ignore-pattern 'tools/**'",
+    "format": "npr oxfmt -c kit/.oxfmtrc.json kit '!src/**' '!test/**' '!tools/**' '!.oxlintrc.author.json'",
+    "format:check": "npr oxfmt -c kit/.oxfmtrc.json --check kit '!src/**' '!test/**' '!tools/**' '!.oxlintrc.author.json'",
     "test": "node --import ./node_modules/@wildshard/sharddev/src/sharddev/bake/format-hook.mjs --test 'tools/*.test.ts'",
     "check:asks": "node kit/scripts/asks.mjs check",
     "check:agents": "node .githooks/agents-md.mjs lint",
@@ -24,12 +24,13 @@
     "agents:sync": "node scripts/agent-sync.mjs",
     "md:wrap": "node kit/scripts/md-wrap.mjs",
     "test:hooks": "node --test '.githooks/*.test.mjs'",
-    "check": "pnpm typecheck && pnpm lint && pnpm format:check && pnpm test && pnpm check:asks && pnpm check:agents && pnpm check:agent-sync && pnpm test:agent-hooks && pnpm check:parity && node --check scripts/chromium-keychain-check.mjs && node --test test/tooling/chrome-keychain.test.mjs test/tooling/worktree-guard.test.mjs test/tooling/disk-land.test.mjs test/tooling/lane-live.test.mjs test/tooling/keep-copy.test.mjs test/tooling/leftovers-report.test.mjs test/tooling/reap-report.test.mjs",
+    "check": "pnpm check:bin-pins && pnpm typecheck && pnpm lint && pnpm format:check && pnpm test && pnpm check:asks && pnpm check:agents && pnpm check:agent-sync && pnpm test:agent-hooks && pnpm check:parity && node --check scripts/chromium-keychain-check.mjs && node --test test/tooling/chrome-keychain.test.mjs test/tooling/worktree-guard.test.mjs test/tooling/disk-land.test.mjs test/tooling/lane-live.test.mjs test/tooling/keep-copy.test.mjs test/tooling/leftovers-report.test.mjs test/tooling/reap-report.test.mjs",
     "check:shard": "wildshard check . && pnpm test:shard",
     "test:shard": "node --import @wildshard/engine/scripts/sim-node-loader.mjs --test 'test/*.test.ts'",
     "build:shard": "wildshard build .",
     "watch": "wildshard watch .",
-    "lint:shard": "oxlint -c .oxlintrc.author.json --deny-warnings src"
+    "lint:shard": "node kit/scripts/bin-tools.mjs -c .oxlintrc.author.json --deny-warnings src",
+    "check:bin-pins": "node kit/scripts/bin-pins.mjs"
   },
   "dependencies": {
     "@wildshard/engine": "0.1.24",
@@ -40,11 +41,9 @@
   "devDependencies": {
     "@types/node": "24.3.1",
     "@typescript/typescript6": "6.0.2",
-    "oxfmt": "0.74.0",
     "oxlint": "1.89.0",
-    "oxlint-tsgolint": "7.0.2004",
     "playwright": "1.65.0",
-    "typescript": "7.0.2"
+    "npm-bin-deps": "2.1.0"
   },
   "pnpm": {
     "ignoredOptionalDependencies": [
@@ -136,5 +135,11 @@
       "assemblyscript>binaryen": "npm:@pre-bundled/binaryen@131.0.0-nightly.20260721-patch-1",
       "@wildshard/format": "npm:@wildshard/shard-format@0.7.0"
     }
-  }
+  },
+  "binDependencies": {
+    "typescript": "7.0.2",
+    "oxfmt": "0.74.0",
+    "oxlint-tsgolint": "7.0.2004"
+  },
+  "binDependenciesInstaller": "npm"
 }

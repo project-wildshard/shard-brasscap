@@ -58,6 +58,12 @@ jobs:
       # GVS G9 (J230): pnpm turns the global virtual store off whenever ci is true; keep the runner's CI
       # environment and select only the installer layout, as engine and the consumers do.
       - run: pnpm install --frozen-lockfile --config.ci=false --config.enableGlobalVirtualStore=true
+      - uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+        with:
+          path: ~/.cache/npm-bin-deps
+          key: npr-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('.bin-deps/package.json', '.bin-deps/package-lock.json') }}
+      - run: pnpm exec npr install --frozen
+      - run: node kit/scripts/bin-pins.mjs
       - name: Prove the installed global store layout
         run: node scripts/assert-store-layout.mjs
       # The agent hook scripts are shellchecked in pnpm check, at this exact
