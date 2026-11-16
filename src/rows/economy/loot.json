@@ -43,6 +43,17 @@
                     "item": "coin",
                     "weight": 1,
                     "count": [
+                      6,
+                      10
+                    ],
+                    "match": {
+                      "kind": "brawler"
+                    }
+                  },
+                  {
+                    "item": "coin",
+                    "weight": 1,
+                    "count": [
                       2,
                       4
                     ],

@@ -61,7 +61,9 @@ function mesa(b: Batch, cx: number, cz: number, w: number, d: number, h: number,
     if (th0) { ox = cx; oz = cz; }
     ox += rr(-0.06, 0.06) * cw; oz += rr(-0.06, 0.06) * cd;
   }
-  if (opt.noCollide !== true) col(cx, h / 2, cz, w / 2, h / 2, d / 2);
+  // the solid is the drawn block: from its foot (y0, -0.5 by default) to its drawn top, so a ledge holds bodies where it shows
+  const y0 = opt.y0 ?? -0.5;
+  if (opt.noCollide !== true) col(cx, (y0 + y) / 2, cz, w / 2, (y - y0) / 2, d / 2);
   return y;
 }
 

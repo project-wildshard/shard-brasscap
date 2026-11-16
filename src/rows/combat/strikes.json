@@ -40,6 +40,44 @@
         "windup": 1.1
       },
       {
+        "active": 0.2,
+        "cooldown": 1.8,
+        "damage": 10,
+        "id": "brasscap.brawler.club",
+        "range": 2.4,
+        "recover": 0.8,
+        "shape": {
+          "halfAngle": 0.9,
+          "kind": "arc",
+          "radius": 2.6
+        },
+        "speed": 0,
+        "tags": [
+          "creature.bandit"
+        ],
+        "weight": 1,
+        "windup": 0.7
+      },
+      {
+        "active": 0.7,
+        "cooldown": 4,
+        "damage": 14,
+        "id": "brasscap.brawler.tackle",
+        "range": 9,
+        "recover": 1.4,
+        "shape": {
+          "kind": "lane",
+          "length": 7,
+          "width": 1.6
+        },
+        "speed": 7,
+        "tags": [
+          "creature.bandit"
+        ],
+        "weight": 1,
+        "windup": 1.0
+      },
+      {
         "active": 1.1,
         "cooldown": 5,
         "damage": 10,

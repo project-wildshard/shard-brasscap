@@ -57,6 +57,27 @@
         "threatSpeed": 1.6,
         "wanderMaxSeconds": 5,
         "wanderMinSeconds": 2
+      },
+      {
+        "id": "brasscap.bandit.brawler",
+        "kind": "challenge-grazer",
+        "thinkDivisor": 3,
+        "charge": "brasscap.brawler.tackle",
+        "close": "brasscap.brawler.club",
+        "noticeRadius": 10,
+        "chargeRadius": 8,
+        "loseRadius": 18,
+        "walkSpeed": 1.0,
+        "approachSpeed": 2.2,
+        "homeRadius": 10,
+        "faceSeconds": 0.8,
+        "circleRate": 0.05,
+        "farPreferenceRadius": 4,
+        "farWeight": 2,
+        "nearWeight": 0.2,
+        "closeWeight": 1,
+        "windupField": "paw",
+        "recoveryField": "winded"
       }
     ],
     "groups": [
@@ -179,9 +200,9 @@
       },
       {
         "at": [
-          9.5,
+          10.45,
           6,
-          -36.5
+          -34.0
         ],
         "brain": "brasscap.bandit.marksman",
         "id": "bandit.camp-2.1",
@@ -190,7 +211,7 @@
         "species": "brasscap.bandit",
         "strike": "brasscap.bandit.rifle",
         "variant": "tin",
-        "yaw": 0
+        "yaw": -1.5708
       },
       {
         "at": [
@@ -209,9 +230,9 @@
       },
       {
         "at": [
-          16.6,
+          10.45,
           6,
-          -38.5
+          -38.0
         ],
         "brain": "brasscap.bandit.marksman",
         "id": "bandit.camp-2.3",
@@ -220,7 +241,7 @@
         "species": "brasscap.bandit",
         "strike": "brasscap.bandit.rifle",
         "variant": "tin",
-        "yaw": 0
+        "yaw": -1.5708
       },
       {
         "at": [
@@ -266,6 +287,22 @@
         "strike": "brasscap.bandit.shot",
         "variant": "tin",
         "yaw": 0
+      },
+      {
+        "id": "brawler.1",
+        "species": "brasscap.brawler",
+        "variant": "tin",
+        "brain": "brasscap.bandit.brawler",
+        "strike": null,
+        "seed": 61,
+        "scale": 1.15,
+        "at": [
+          19.5,
+          0,
+          -49.5
+        ],
+        "yaw": 3.1,
+        "phaseOffset": 0
       },
       {
         "at": [
