@@ -393,9 +393,19 @@ function town(props: THREE.Group, dyn: THREE.Group, signs: THREE.Group, gate: TH
   for (let z = -40; z <= -28; z += 1.7) b.add(box(0.12, 1.3, 1.6, PAL.wood, 10.9, LY + 0.65, z, 0, { vary: 0.2, rz: (hash(z, 1) - 0.5) * 0.15 }));
   b.add(box(0.12, 0.12, 12, PAL.woodDark, 10.95, LY + 1.05, -34));
   crate(b, 12.2, -39.5, LY, 0.8); barrel(b, 12.4, -37.6, LY); barrel(b, 12.3, -30.2, LY);
-  // ladder up the west face
-  for (const k of [-1, 1]) b.add(box(0.12, 7.2, 0.12, PAL.woodDark, 9.55, 3.4, -28.4 + k * 0.32, 0, { rz: 0.16 }));
-  for (let i = 0; i < 11; i++) b.add(box(0.08, 0.08, 0.66, PAL.wood, 9.38 + i * 0.105, 0.5 + i * 0.62, -28.4));
+  // TC-B2: a plank stair up the west face, rising south to north (-z) to the long rifle's counter. The old ladder was
+  // drawn only (the client has no ladder), so the ledge was out of reach. Each step rises 0.3 m, under the player's 0.35 m
+  // autostep, so a walk climbs it; each is solid from below the sand to its tread.
+  {
+    const SX = 9.3, HALF_W = 0.7, RUN = 0.5, STEPS = 20, z0 = -23.5;
+    for (let k = 1; k <= STEPS; k++) {
+      const z = z0 - (k - 1) * RUN, g = groundY(SX, z) - 0.5, top = (LY * k) / STEPS, h = top - g;
+      b.add(box(HALF_W * 2, h, RUN + 0.02, k % 2 === 0 ? PAL.wood : PAL.woodDark, SX, g + h / 2, z, 0, { vary: 0.1, seed: 300 + k }));
+      col(SX, g + h / 2, z, HALF_W, h / 2, RUN / 2);
+    }
+    // a hand rail on the open (west) side, posts every fourth step
+    for (let k = 4; k <= STEPS; k += 4) b.add(box(0.1, 1.0, 0.1, PAL.woodDark, SX - HALF_W + 0.05, (LY * k) / STEPS + 0.5, z0 - (k - 1) * RUN));
+  }
   // the campfire adds no collider: lifting one would lift the ledge barrel's (already at LY) a second time
   const ledgeFire = campfire(b, fireMat, 15.5, -32); dyn.add(ledgeFire); liftLast(b, 12, LY, 0); ledgeFire.position.y = LY;
   // ----- Camp 3 (18.4, -50.5) in the side canyon -----
