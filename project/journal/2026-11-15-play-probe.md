@@ -97,3 +97,8 @@ hovering at the porch). They are out; the proper Wyrm creature waits for ONE-FOR
 now spawn at half size (the server and the page both read spawn scale), the one by the first camp moved to
 -62 m, and every camp, wyrmling and the rusher pack notices from closer, so the walk meets one camp at a
 time. Health bars are the engine's half (TC-B10).
+
+## 2026-11-16: kills pay coins (TC-E6)
+
+The loot row gets an `economy.tables` coin table: bandit 3 to 6, wyrmling 2 to 4, drake 4 to 8, the Wyrm 25. Engine
+`plan/tc-engine2` 76704ecf (TC-E6) pays it off a grid data cell; until that engine ships, a kill still pays nothing on staging. Hero recaptured.

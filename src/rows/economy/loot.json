@@ -7,7 +7,73 @@
         "finds": null,
         "gear": "purse.coins",
         "id": "brasscap.loot",
-        "marks": null
+        "marks": null,
+        "economy": {
+          "effects": [],
+          "goods": [],
+          "grants": {
+            "player": [],
+            "worn": [],
+            "weapons": []
+          },
+          "finds": {
+            "counters": [],
+            "sections": []
+          },
+          "marks": [],
+          "tables": [
+            {
+              "id": "brasscap.kills",
+              "domain": "coins",
+              "table": {
+                "mode": "weighted",
+                "rows": [
+                  {
+                    "item": "coin",
+                    "weight": 1,
+                    "count": [
+                      3,
+                      6
+                    ],
+                    "match": {
+                      "kind": "bandit"
+                    }
+                  },
+                  {
+                    "item": "coin",
+                    "weight": 1,
+                    "count": [
+                      2,
+                      4
+                    ],
+                    "match": {
+                      "kind": "wyrmling"
+                    }
+                  },
+                  {
+                    "item": "coin",
+                    "weight": 1,
+                    "count": [
+                      4,
+                      8
+                    ],
+                    "match": {
+                      "kind": "drake"
+                    }
+                  },
+                  {
+                    "item": "coin",
+                    "weight": 1,
+                    "count": 25,
+                    "match": {
+                      "kind": "wyrm"
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        }
       }
     ]
   }
