@@ -2,7 +2,9 @@
 // The quest `brasscap.bandits` completes when the third camp falls; its onComplete scene
 // `brasscap.gate.open` queues event 301. That sets shared field 101 `brasscap.gate.open`
 // once, for good, and the target panel hides the gate door and drops its collider.
-// Shared fields arrive sorted by id after the state counts; 101 is the only one.
+// Shared fields arrive sorted by id after the state counts; 101 comes first.
+// TEMPLATE-E2E TC-B7b: the lever by the gate (`brasscap.lever.use`, scene `brasscap.lever.pull`) queues event 302,
+// which sets shared field 102 `brasscap.side-door.open` once, for good: the side door's mover slides up on it.
 // Compiled once by the author (sharddev's pinned AssemblyScript, 2 pages); the bytes ship raw.
 export function abi_version(): i32 { return 0; }
 export function init(lo: i32, hi: i32): void {}
@@ -12,6 +14,7 @@ export function out_ptr(): i32 { return 24576; }
 export function out_cap(): i32 { return 4; }
 let count: i32 = 0;
 let ticks: i32 = 0;
+let sideOpen = false;
 export function out_count(): i32 { return count; }
 @inline function setShared(field: f64, value: f64): void {
   const at = 24576 + count * 40;
@@ -22,8 +25,12 @@ export function on_tick(): void {
   count = 0; ticks += 1;
   const open = load<f64>(16384 + 64);
   const events = i32(load<f64>(16384 + 256));
-  let opening = false;
-  for (let i = 0; i < events; i++) if (load<f64>(16384 + (33 + i * 6) * 8) === 301) opening = true;
+  let opening = false, pulled = false;
+  for (let i = 0; i < events; i++) {
+    const kind = load<f64>(16384 + (33 + i * 6) * 8);
+    if (kind === 301) opening = true; else if (kind === 302) pulled = true;
+  }
   if (opening && open < 0.5) setShared(101, 1);
+  if (pulled && !sideOpen) { setShared(102, 1); sideOpen = true; }
   store<i32>(30000, ticks); // continuation witness lives outside input/output regions
 }

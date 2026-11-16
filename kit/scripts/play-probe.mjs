@@ -9,7 +9,7 @@
 //   node kit/scripts/play-probe.mjs [--staging | --base=<url>] [--entry=select|road|slug|chunk|both] [--layout=desktop|phone]
 //     [--do=<step>,<step>...] [--out=<dir>] [--seconds=<budget>] [--browser=chromium|webkit]
 //
-// Steps: `wait:<s>`, `face:<x>,<z>[,<y>]` (and pitch to height y), `shot:<name>` (a screenshot), `fire[:<n>]` (left click n times, one cycle apart), `reload`, `slot:<n>` (press digit n), `use` (E),
+// Steps: `wait:<s>`, `find:<name>` (drawn objects by name, with world positions), `face:<x>,<z>[,<y>]` (and pitch to height y), `shot:<name>` (a screenshot), `fire[:<n>]` (left click n times, one cycle apart), `reload`, `slot:<n>` (press digit n), `use` (E),
 // `aim:<creature kind>` (turn to face the nearest one alive), `walk:<x>,<z>` (hold W toward a point of the cell's frame),
 // `kill:<creature kind>` (walk within 25 m, aim and fire until it dies or 45 s pass; 8 hits with no kill mark a drawn corpse, skipped after), `shoot:<kind>` (aim, then fire once).
 // Default site: a local preview at http://127.0.0.1:5173 (`--base`); `--staging` is https://staging.wildshard.io. Never
@@ -92,7 +92,7 @@ function read({ porch, spawn }) {
 }
 
 async function enter(page, how) {
-  await page.goto(`${base}/?mute=1&nolock=1${how === 'chunk' ? `&chunk=${CELL}` : ''}`, { waitUntil: 'load', timeout: 120_000 });
+  await page.goto(`${base}/?mute=1&nolock=1${how === 'chunk' ? `&skipintro&chunk=${CELL}` : ''}`, { waitUntil: 'load', timeout: 120_000 });
   if (how === 'chunk') return await ready(page, Date.now());
   if (how === 'slug') return await slugIn(page);
   await page.locator('.ws-main-select').waitFor({ state: 'visible', timeout: 120_000 });
@@ -214,6 +214,17 @@ async function step(page, name) {
     }
     await sleep(400); return { verb };
   }
+  if (verb === 'find') {
+    // `find:<name>`: the drawn objects whose name holds <name>, with their world positions (a mover's panel, a prop)
+    const rows = await page.evaluate((name) => {
+      const out = []; /** @type {any} */ (window).__wildshard.world.game.scene.traverse((o) => {
+        if (typeof o.name !== 'string' || !o.name.includes(name)) return;
+        const p = o.getWorldPosition(o.position.clone()); out.push({ name: o.name, visible: o.visible, x: Math.round(p.x * 100) / 100, y: Math.round(p.y * 100) / 100, z: Math.round(p.z * 100) / 100 });
+      });
+      return out.slice(0, 8);
+    }, arg);
+    return { verb, rows };
+  }
   if (verb === 'shot') { await page.screenshot({ path: join(out, `${arg}.png`) }); return { verb }; }
   if (verb === 'walk') { const [x, z] = arg.split(',').map(Number); return { verb, near: Math.round(await walk(page, x, z)) }; }
   if (verb === 'aim' || verb === 'shoot') {
@@ -241,7 +252,8 @@ async function step(page, name) {
       if (d > 25) { await walk(page, c.pos.x, c.pos.z, 20, 15_000); continue; }
       const held = await page.evaluate(() => /** @type {any} */ (window).__wildshard.world.weapons.current?.state ?? null);
       if (held !== null && held.ammo === 0 && held.reserve > 0 && !held.reloading) { await page.keyboard.press('KeyR'); await sleep(2500); continue; }
-      await aimAt(page, c); await fire(page, 1); shots++; onTarget++;
+      // aim down the sights (right button held): the lever's hip spread is 0.9, its sights' 0
+      await aimAt(page, c); await page.mouse.down({ button: 'right' }); await sleep(250); await fire(page, 1); await page.mouse.up({ button: 'right' }); shots++; onTarget++;
     }
     return { verb, found: true, killed: false, shots, corpses: corpses.length };
   }

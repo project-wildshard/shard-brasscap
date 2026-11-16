@@ -25,6 +25,11 @@
         "value": 1
       },
       {
+        "id": "brasscap.lever.pull",
+        "type": 302,
+        "value": 1
+      },
+      {
         "id": "brasscap.scattergun.take",
         "type": 102,
         "value": 3

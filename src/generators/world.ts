@@ -18,6 +18,7 @@ import { cowboy } from './actors';
 import { groundColour, groundY, trailX } from './terrain';
 import { clouds, mesaSky, PAL, SUN_DIR } from './sky';
 import { Batch, box, cyl, facet, halo, hash, paint, place, rand, rr, seed, textTexture } from './util';
+import { SIDE_DOOR, sideDoorLook, sideWall } from './sideDoor';
 
 interface Box { x: number; y: number; z: number; hx: number; hy: number; hz: number }
 /** The cleanroom's collider list, filled while a build runs (a fresh list per build: watch reruns it on every save). */
@@ -436,10 +437,12 @@ function town(props: THREE.Group, dyn: THREE.Group, signs: THREE.Group, gate: TH
     pivot.add(db.mesh(doorMat));
     gate.add(pivot);
   }
+  // TC-B7b: the plank wall west of the gate, with the side door's doorway beside the post (sideDoor.ts)
+  sideWall(b, (c) => { col(c.x, c.y, c.z, c.hx, c.hy, c.hz); });
   // the shut gate's own collider: the gate part is panel `brasscap.gate`, hidden with its collider once the gate opens
   const shut = new THREE.Mesh(new THREE.BoxGeometry(GW, GH, 0.4), new THREE.MeshBasicMaterial());
   shut.position.set(2, GH / 2, -62); shut.visible = false; gate.add(solid(shut));
-  // bell and lever box beside the gate, lantern on the post
+  // bell and lever box beside the gate (the lever is TC-B7b's prompt, `brasscap.lever.use`), lantern on the post
   b.add(box(0.12, 3.2, 0.12, PAL.woodDark, 7.4, 1.6, -60.8)); b.add(box(0.9, 0.1, 0.1, PAL.woodDark, 7.05, 3.2, -60.8));
   b.add(cyl(0.12, 0.3, 0.4, 10, PAL.brass, 6.7, 2.9, -60.8));
   b.add(box(0.4, 0.7, 0.3, PAL.woodDark, 7.0, 1.2, -60.5)); b.add(box(0.06, 0.5, 0.06, '#b8312a', 7.0, 1.7, -60.3, 0, { rz: 0.4 }));
@@ -507,6 +510,8 @@ export function buildBrasscap(world: ShardWorld): void {
   const props = world.part('props', () => undefined), dyn = world.part('glow', () => undefined), signs = world.part('signs', () => undefined), gate = world.part('gate', () => undefined, { panel: 'brasscap.gate' });
   town(props, dyn, signs, gate);
   const hidden = new THREE.MeshBasicMaterial(), unit = new THREE.BoxGeometry(1, 1, 1);
+  // TC-B7b: the side door, drawn as the props panel of its mover's id and posed by the server's mover
+  world.part('side-door', (part) => { part.add(sideDoorLook()); }, { panel: SIDE_DOOR });
   world.part('colliders', (part) => {
     for (const c of colliders) {
       const m = new THREE.Mesh(unit, hidden);

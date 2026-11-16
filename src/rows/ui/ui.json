@@ -77,6 +77,17 @@
         "label": "Open the strongbox (+30 lever rounds)",
         "radius": 2.5,
         "scene": "brasscap.strongbox"
+      },
+      {
+        "at": [
+          7.0,
+          1.6,
+          -60.3
+        ],
+        "id": "brasscap.lever.use",
+        "label": "Pull the lever (the side door)",
+        "radius": 2.0,
+        "scene": "brasscap.lever.pull"
       }
     ],
     "itemActions": [

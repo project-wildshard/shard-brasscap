@@ -8,6 +8,7 @@ import { emitPlatformSections } from '@wildshard/sharddev/platformSections';
 import type { GeneratedProject, ProjectGenerationContext } from '@wildshard/sharddev/projectGeneration';
 import { defineShard, type SceneShard } from '@wildshard/sharddev/scene/shard';
 import { buildBrasscap } from './generators/world';
+import { sideDoorMover } from './generators/sideDoor';
 import decisionScripts from './rows/sim/scripts.json' with { type: 'json' };
 import identity from './identity.json' with { type: 'json' };
 import creatures from './rows/actors/creatures.json' with { type: 'json' };
@@ -60,7 +61,7 @@ function gameplay(shard: Shardfile): Shardfile {
     ...shard,
     look: { ...shard.look, families, materials: { ...shard.look.materials, glow: look.look.materials.glow } },
     ...creatures, ...crowds, ...audio, ...encounters, ...items, ...ledger, ...story, ...clientScripts, ...hooks, ...plumbing,
-    ...sim, ...migrations, ...state, ...card, ...ui, targets, ...movers, ...traversal,
+    ...sim, ...migrations, ...state, ...card, ...ui, targets, movers: [...movers.movers, sideDoorMover()], ...traversal,
     files: [...shard.files, ...authored.files], library: [...shard.library, ...authored.library], critical: [...shard.critical, ...authored.critical],
     budgets: { ...shard.budgets, library: { resident: library.resident + authored.budgets.library.resident, compressed: library.compressed + authored.budgets.library.compressed } },
     serverBudget: authored.serverBudget,

@@ -19,6 +19,15 @@
         "type": "bool"
       },
       {
+        "default": 0,
+        "id": 102,
+        "name": "brasscap.side-door.open",
+        "privacy": "public",
+        "type": "i32",
+        "min": 0,
+        "max": 1
+      },
+      {
         "default": false,
         "id": 110,
         "name": "brasscap.wyrm-tell",

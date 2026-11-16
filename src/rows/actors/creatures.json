@@ -375,16 +375,16 @@
       },
       {
         "at": [
-          -9,
+          -7,
           0,
-          -62
+          -57
         ],
         "brain": "brasscap.wyrmling.ram",
         "home": {
-          "r": 5,
-          "x": -9,
+          "r": 4,
+          "x": -7,
           "y": 0,
-          "z": -62
+          "z": -57
         },
         "id": "wyrmling.1",
         "scale": 0.5,
