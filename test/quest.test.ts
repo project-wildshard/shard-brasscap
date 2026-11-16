@@ -30,7 +30,7 @@ test('the quest runs from the sheriff\'s talk to the report, and a reload reads 
     };
     press('offer', 'accept');
     assert.ok(host.flags.has('brasscap.sheriff.met'), 'the talk starts the quest');
-    stand(-2, 12); // by the depot, inside the cell: a player off the cell for a second leaves the Wyrm armed but never starting
+    stand(-2, 12); // by the depot: off the cell there is no ground, and `stand` keeps the height a fall leaves (wyrm-return.test.ts)
     for (const id of ['target.1', 'target.2']) kill(sim, id);
     for (const camp of [1, 2, 3]) for (const n of [1, 2, 3]) kill(sim, `bandit.camp-${String(camp)}.${String(n)}`);
     steps(TICKS);
