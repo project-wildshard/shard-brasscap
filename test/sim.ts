@@ -9,7 +9,7 @@ import { resolve } from 'node:path';
 import { Vector3 } from 'three';
 import { loadRapier } from '@wildshard/engine/physics/rapier';
 import { outputDescriptor, serverReadsFile } from '@wildshard/engine/game/shardfile/outputDescriptor';
-import { createShardfileSim, type ShardfileSimulation } from '@wildshard/engine/game/plugin/simulation';
+import { createShardfileSim, type ShardfileSimPorts, type ShardfileSimulation } from '@wildshard/engine/game/plugin/simulation';
 import { loadHeadlessProduct } from '@wildshard/engine/host/headlessProduct';
 import { productHeadlessSections } from '@wildshard/engine/host/headlessSections';
 import type { Shardfile } from '@wildshard/format/shardSchema';
@@ -40,11 +40,11 @@ function physicsBytes(): Uint8Array {
 
 export interface Facts { readonly facts: string[]; readonly coins: number[] }
 /** The cell's server with every quest fact and coin payment it files kept in `facts`. */
-export async function brasscapSim(): Promise<{ shard: Shardfile; sim: ShardfileSimulation; filed: Facts }> {
+export async function brasscapSim(): Promise<{ shard: Shardfile; sim: ShardfileSimulation; filed: Facts; ports: ShardfileSimPorts; assets: Map<string, Uint8Array> }> {
   const input = await product(), filed: Facts = { facts: [], coins: [] };
-  const sim = createShardfileSim(input.shard, input.assets, { rapier: await loadRapier(physicsBytes()), sections: input.sections,
-    quest: { fact: (name: string) => { filed.facts.push(name); }, coins: (amount: number) => { filed.coins.push(amount); } } });
-  return { shard: input.shard, sim, filed };
+  const ports: ShardfileSimPorts = { rapier: await loadRapier(physicsBytes()), sections: input.sections,
+    quest: { fact: (name: string) => { filed.facts.push(name); }, coins: (amount: number) => { filed.coins.push(amount); } } };
+  return { shard: input.shard, sim: createShardfileSim(input.shard, input.assets, ports), filed, ports, assets: input.assets };
 }
 
 /** A shot from the player that no body survives. */
@@ -59,7 +59,10 @@ export function kill(sim: ShardfileSimulation, id: string): void {
 export function killWhenOpen(sim: ShardfileSimulation, id: string, seconds: number): number {
   const body = sim.host.entities.get(id);
   if (body === undefined) throw new Error(`Missing ${id}`);
+  const player = sim.host.players.get(PLAYER), full = player?.health.attributes.health;
   for (let tick = 0; tick < seconds * TICKS; tick++) {
+    // the player is kept whole: this proves the kill, not the fight
+    if (player !== undefined && full !== undefined) player.health.attributes.health = full;
     sim.host.combat.hit({ source: 'env', sourceTags: [PLAYER, 'dmg.ranged'], target: body.combatActor(), amount: 100_000, point: body.position.clone(), dir: new Vector3(0, 0, 1) });
     if (!body.alive) return tick;
     sim.host.step();
