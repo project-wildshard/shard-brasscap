@@ -30,8 +30,12 @@ const budget = Number(flag('seconds', '420')) * 1000;
 mkdirSync(out, { recursive: true });
 
 /** Brasscap's cell on the grid catalogue, its card, and its places in the shard's own frame. */
-const CELL = 'blender-template', CARD = 'Brasscap Mesa', SLUG = 'brasscap-mesa';
-const PORCH = { x: -2.2, z: -0.92 }, SPAWN = { x: -1.6, z: 2.6 };
+const CELL = flag('cell', 'blender-template'), CARD = flag('card', 'Brasscap Mesa'), SLUG = flag('slug', 'brasscap-mesa');
+/** `--porch=x,z` and `--spawn=x,z` move the two reference points for another shard (the Template: `--slug=_template --cell=template-2`). */
+const xz = (text) => { const [x, z] = text.split(',').map(Number); return { x, z }; };
+const PORCH = xz(flag('porch', '-2.2,-0.92')), SPAWN = xz(flag('spawn', '-1.6,2.6'));
+/** `--fields=<row>,<row>`: wire rows read on every report (a boss's tell and core fields). */
+const FIELDS = flag('fields', '').split(',').filter(Boolean);
 /** The chrome a review page would also pass (scripts/chromium-keychain.mjs in engine), muted. Headless Chromium draws at its
  *  60 Hz begin-frame clock: the probe never asks for more (no vsync or frame-rate flags). */
 const ARGS = ['--use-mock-keychain', '--password-store=basic', '--mute-audio', '--use-angle=metal', '--ignore-gpu-blocklist'];
@@ -56,10 +60,23 @@ function drawnBodies(world, pos) {
   return rows;
 }
 
-const install = (page) => page.evaluate(`window.__probeBodies = ${drawnBodies.toString()}`);
+/** The live creatures the server sends this page, by species (or wire kind): handle, place, hp. Runs in the page. */
+function liveRows(species) {
+  const net = /** @type {any} */ (window).__workerClientNet?.(), client = net?.client, latest = client?.latest;
+  if (latest === null || latest === undefined) return [];
+  const out = [];
+  for (const [handle, info] of client.entities) {
+    if (info.cls?.cls !== 'animal' || (info.initial?.species !== species && info.initial?.kind !== species)) continue;
+    const f = client.fields(latest, handle);
+    if (f !== null && Boolean(f.alive)) out.push({ handle, x: Number(f.x), y: Number(f.y), z: Number(f.z), hp: Number(f.hp) });
+  }
+  return out;
+}
+
+const install = (page) => page.evaluate(`window.__probeBodies = ${drawnBodies.toString()}; window.__probeLive = ${liveRows.toString()}`);
 
 /** Everything the probe reads, in the page. The cell's frame: on a grid page the player's position is the cell's own. */
-function read({ porch, spawn }) {
+function read({ porch, spawn, fields = [] }) {
   const W = /** @type {any} */ (window), P = W.__wildshard, world = P?.world;
   if (world === undefined) return { error: 'no world' };
   const st = P.state(), area = P.area?.() ?? null, grid = P.shard?.grid?.state?.() ?? null, pos = st.player.pos;
@@ -83,7 +100,9 @@ function read({ porch, spawn }) {
       within60: bodies.filter((b) => b.shown && b.d <= 60).length, life: grid?.life ?? null },
     quest: wire?.quests ?? st.quest, flags: wire?.flags ?? area?.flags ?? [], coins: wire?.paid ?? null, owned: wire?.owned ?? null,
     wire: wire === undefined ? null : { rows: wire.rows, drawn: wire.drawn, hits: wire.hits, kills: wire.kills, hp: wire.hp, fights: wire.fights, cell: wire.cell },
-    prompt: world.hud?.promptText ?? null, frames: wire?.frames ?? null,
+    prompt: world.hud?.promptText ?? null, frames: wire?.frames ?? null, fights: wire?.fights ?? null,
+    fields: Object.fromEntries(fields.map((name) => [name, W.__workerClientRow?.(name) ?? null])),
+    talk: document.querySelector('.ws-quest-talk.show .ws-quest-talk-name')?.textContent ?? null,
     // TC-B10: the health bars on screen (engine ui/Combat.ts): each shown bar's label and its fill, and the damage numbers up
     bars: [...document.querySelectorAll('.ws-combat-hp.show')].map((el) => ({ label: el.querySelector('.ws-combat-hp-kind')?.textContent ?? '',
       fill: Number(/scaleX\(([\d.]+)\)/u.exec(el.querySelector('.ws-combat-hp-fill')?.style.transform ?? '')?.[1] ?? 1), dead: el.classList.contains('dead') })),
@@ -262,7 +281,87 @@ async function step(page, name) {
     }
     return { verb, found: true, killed: false, shots, corpses: corpses.length };
   }
+  if (verb === 'talk') {
+    // `talk`: E at the speaker, then E through its lines; E on the last line takes the first choice the node offers
+    await page.keyboard.press('KeyE'); await sleep(700);
+    const said = [];
+    for (let i = 0; i < 24; i++) {
+      const box = await page.evaluate(() => { const el = document.querySelector('.ws-quest-talk.show'); return el === null ? null : { name: el.querySelector('.ws-quest-talk-name')?.textContent ?? '', text: el.querySelector('.ws-quest-talk-text')?.textContent ?? '', choices: [...el.querySelectorAll('.ws-quest-talk-choice')].map((c) => c.textContent ?? '') }; });
+      if (box === null) break;
+      if (said.at(-1)?.text !== box.text) said.push(box);
+      await page.keyboard.press('KeyE'); await sleep(450);
+    }
+    await sleep(1200);
+    return { verb, said: said.map((b) => `${b.name}: ${b.text.slice(0, 80)}${b.choices.length > 0 ? ` [${b.choices.join(' | ')}]` : ''}`) };
+  }
+  if (verb === 'melee') {
+    // `melee:<kind>[@<reach>]`: walk within reach of the nearest live <kind> (the wire's rows), face its middle, swing until it
+    // dies or 60 s pass. A melee kit item strikes the body whose aim point is within its range of the look.
+    const [kind = arg, r = '1.8'] = arg.split('@'), reach = Number(r);
+    const live = () => page.evaluate((k) => { const W = /** @type {any} */ (window), p = W.__wildshard.state().player.pos;
+      return (W.__probeLive?.(k) ?? []).map((c) => ({ ...c, d: Math.hypot(c.x - p.x, c.z - p.z) })).sort((a, b) => a.d - b.d); }, kind);
+    const first = await live(); if (first.length === 0) return { verb, found: false };
+    const count = first.length, ends = Date.now() + 60_000; let swings = 0;
+    while (Date.now() < ends) {
+      const rows = await live(); if (rows.length < count) return { verb, found: true, killed: true, swings, left: rows.length };
+      const c = rows[0];
+      if (c.d > reach) { await walk(page, c.x, c.z, reach * 0.7, 6000); continue; }
+      await aimAt(page, { pos: { x: c.x, y: c.y, z: c.z } }, 0.5);
+      await page.mouse.down(); await sleep(60); await page.mouse.up(); swings++; await sleep(420);
+    }
+    return { verb, found: true, killed: false, swings };
+  }
+  if (verb === 'boss') { return { verb, ...(await boss(page, arg)) }; }
   throw new Error(`No probe step ${name}`);
+}
+
+/** `boss:<kind>@<reach>[@<aim height>]`: a told boss fight (the Template's Barrow Warden): stand off at about 0.8 x reach, sidestep
+ *  while its ground ring is told (the first `--fields` row), strike while its core is open (the second), and back off to heal
+ *  (health regenerates six seconds after the last hit) when hp is under 45. Ends when the boss dies or 300 s pass. */
+async function boss(page, arg) {
+  const [kind = arg, r = '5', h = '2.5'] = arg.split('@'), reach = Number(r), height = Number(h), standoff = reach * 0.75;
+  const [tellRow, coreRow] = FIELDS;
+  const look = () => page.evaluate(([k, tellName, coreName]) => {
+    const W = /** @type {any} */ (window), st = W.__wildshard.state(), p = st.player.pos, wire = W.__workerClient?.();
+    const b = (W.__probeLive?.(k) ?? [])[0] ?? null;
+    return { boss: b, d: b === null ? null : Math.hypot(b.x - p.x, b.z - p.z), hp: st.player.health, p,
+      tell: W.__workerClientRow?.(tellName) ?? 0, core: W.__workerClientRow?.(coreName) ?? 0, fights: wire?.fights ?? [], hits: wire?.hits ?? 0, flags: wire?.flags ?? [] };
+  }, [kind, tellRow, coreRow]);
+  const log = [], start = await look(); if (start.boss === null) return { found: false };
+  const at = { x: start.boss.x, z: start.boss.z };
+  let swings = 0, dodges = 0, heals = 0, deaths = 0, side = 1, lowHp = start.hp, lastFight = ''; const t0 = Date.now();
+  const ends = Date.now() + Number(flag('bossSeconds', '300')) * 1000;
+  while (Date.now() < ends) {
+    const s = await look();
+    // the timeline: one line whenever the boss's share, its tell or core, or this page's hits change
+    const fight = `${s.fights.find((f) => /boss/u.test(f)) ?? s.fights.at(-1) ?? ''} t${s.tell} c${s.core} hits${s.hits}`;
+    if (fight !== lastFight) { log.push(`${((Date.now() - t0) / 1000).toFixed(1)}s ${fight} hp${Math.round(s.hp)} d${s.d?.toFixed(1)}`); lastFight = fight; }
+    lowHp = Math.min(lowHp, s.hp);
+    if (s.flags.includes(`dead:${kind}`) || s.boss === null) return { found: true, killed: true, swings, dodges, heals, deaths, lowHp, log };
+    if (s.hp <= 0) { deaths++; await sleep(4000); await walk(page, at.x - standoff - 4, at.z, 2, 60_000); continue; }
+    const away = { x: (s.p.x - s.boss.x) / Math.max(s.d, 0.1), z: (s.p.z - s.boss.z) / Math.max(s.d, 0.1) };
+    if (s.hp < 45 && s.core !== 1) {
+      // out of every strike's reach but inside the arena, sidestepping, until health climbs back
+      heals++; await walk(page, s.boss.x + away.x * 7.5, s.boss.z + away.z * 7.5, 1, 5000);
+      for (let t = 0; t < 40; t++) { const n = await look(); if (n.hp >= 85 || n.boss === null) break; await page.keyboard.down(side > 0 ? 'KeyD' : 'KeyA'); await sleep(400); await page.keyboard.up(side > 0 ? 'KeyD' : 'KeyA'); side = -side; await sleep(300); }
+      continue;
+    }
+    if (s.tell === 1) {
+      // the ring is told: circle the boss at the same distance (face it, strafe), out of the slam's spot and the stone's
+      // line, so the core opens with the boss still in reach
+      dodges++; side = -side;
+      await page.keyboard.down('ShiftLeft'); await page.keyboard.down(side > 0 ? 'KeyD' : 'KeyA');
+      for (let t = 0; t < 7; t++) { await face(page, s.boss.x, s.boss.z); await sleep(100); }
+      await page.keyboard.up(side > 0 ? 'KeyD' : 'KeyA'); await page.keyboard.up('ShiftLeft');
+      continue;
+    }
+    if (s.d > standoff + 0.4) { await walk(page, s.boss.x, s.boss.z, standoff, 2000); continue; }
+    if (s.d < standoff - 1) { await face(page, s.boss.x, s.boss.z); await page.keyboard.down('KeyS'); await sleep(200); await page.keyboard.up('KeyS'); continue; }
+    // in reach: swing (a shut core turns the blow away, so swinging early costs nothing and the first open frame lands)
+    await aimAt(page, { pos: { x: s.boss.x, y: s.boss.y, z: s.boss.z } }, height);
+    await page.mouse.down(); await sleep(60); await page.mouse.up(); swings++; await sleep(s.core === 1 ? 240 : 120);
+  }
+  return { found: true, killed: false, swings, dodges, heals, deaths, lowHp, log: log.slice(-120) };
 }
 
 /** The road entry: from Signal Dunes walk to its south edge, then south across the line into Brasscap's cell. */
@@ -300,20 +399,27 @@ try {
     await saveFixture(context, { scope: 'device', key: 'firstPlayDone', data: true });
     await saveFixture(context, { scope: 'device', key: 'devMode', data: true });
     await saveFixture(context, { scope: 'global', key: 'settings', merge: true, data: { music: false, sfx: false, volume: 0, ...(phone ? { tier: 'phone' } : {}) } });
-    const page = await context.newPage(), errors = [];
+    let page = await context.newPage(); const errors = [];
     page.on('pageerror', (error) => { errors.push(error.message.slice(0, 200)); });
     const run = { entry: how };
     try {
       run.loadMs = await enter(page, how);
       await install(page);
       if (how === 'road') run.road = await roadIn(page);
-      run.at = await page.evaluate(read, { porch: PORCH, spawn: SPAWN });
+      run.at = await page.evaluate(read, { porch: PORCH, spawn: SPAWN, fields: FIELDS });
       if (flag('eval', '') !== '') run.eval = await page.evaluate(flag('eval', '')).catch((error) => String(error));
       await page.screenshot({ path: join(out, `${how}-${phone ? 'phone' : 'desktop'}-enter.png`) }).catch(() => undefined);
       run.steps = [];
       for (const name of steps) {
+        if (name === 'reopen') {
+          // `reopen`: a new tab in the same browser context (the same device save), entered the same way, read again
+          await page.close(); page = await context.newPage(); page.on('pageerror', (error) => { errors.push(error.message.slice(0, 200)); });
+          const ms = await enter(page, how); await install(page);
+          run.steps.push({ step: name, loadMs: ms, after: await page.evaluate(read, { porch: PORCH, spawn: SPAWN, fields: FIELDS }) });
+          continue;
+        }
         const did = await step(page, name);
-        run.steps.push({ step: name, ...did, after: await page.evaluate(read, { porch: PORCH, spawn: SPAWN }) });
+        run.steps.push({ step: name, ...did, after: await page.evaluate(read, { porch: PORCH, spawn: SPAWN, fields: FIELDS }) });
       }
       if (steps.length > 0) await page.screenshot({ path: join(out, `${how}-${phone ? 'phone' : 'desktop'}-end.png`) }).catch(() => undefined);
     } catch (error) {
