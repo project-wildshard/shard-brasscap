@@ -1,0 +1,20 @@
+{
+  "schema": "ci21-map-owner-disposition/1",
+  "sourceOriginal": "engine:test/map-source-inputs.test.ts",
+  "sourceBlob": "f6e0cf9fa1e2105919f87dffbfeb0e114a453397",
+  "owner": "brasscap-mesa",
+  "outcome": "retired-case-component",
+  "decision": "J232 case-specific retirement following J342/SS3 source migration",
+  "sourceRevision": "9066374e04ca104e178e337f1b4b45881316fbbc",
+  "migrationCommit": "3475153",
+  "retiredAssertions": [
+    "Former brasscap-mesa generators/mapProgram.ts declares its authored map inputs and imports defining groundMap.ts"
+  ],
+  "reason": "The actual J342/SS3 normal source project has no authored map.json or map program. It declares explicit scene rows and source GLBs. Requiring the removed raster producer would test an absent feature. Only this former Brasscap component is retired; all other map-source-inputs cases and owner assertions remain live.",
+  "currentSourceRoots": [
+    "src/shard.config.ts",
+    "src/rows",
+    "tools"
+  ],
+  "replacementBoundary": "Normal blocking check:shard and CI21 fresh-product grid admission execute the current source; they do not claim a raster assertion."
+}
