@@ -16,7 +16,7 @@
 // production (J205): a join is a write. Chromium runs headless, muted, capped at 60 fps, and the page closes at the end.
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
-import { chromium, webkit } from 'playwright';
+import { chromium, webkit } from '../../scripts/browser-playwright.mjs';
 import { saveFixture } from '@wildshard/engine/scripts/debug-settings.mjs';
 
 const flag = (name, fallback) => process.argv.find((arg) => arg.startsWith(`--${name}=`))?.slice(name.length + 3) ?? fallback;
@@ -327,10 +327,12 @@ async function step(page, name) {
       return (W.__probeLive?.(k) ?? []).filter((c) => Math.hypot(c.x - at.x, c.z - at.z) <= far).map((c) => ({ ...c, d: Math.hypot(c.x - p.x, c.z - p.z) })).sort((a, b) => a.d - b.d); }, [kind, { x: home.x, z: home.z }, leash]);
     const kills = () => page.evaluate(() => /** @type {any} */ (window).__workerClient?.()?.kills ?? 0), before = await kills();
     const first = (await live())[0]; if (first === undefined) return { verb, found: false };
-    const ends = Date.now() + Number(sec) * 1000; let shots = 0, reloads = 0, lowHp = 100;
+    const ends = Date.now() + Number(sec) * 1000; let shots = 0, reloads = 0, lowHp = 100, hpAt = first.hp, since = 0;
     while (Date.now() < ends) {
       const c = (await live()).find((row) => row.handle === first.handle);
       if (c === undefined) return { verb, found: true, killed: true, target: first.handle, kills: (await kills()) - before, shots, reloads, lowHp };
+      // a target out of the line of fire (a ledge row from below) once drained the whole reserve: 15 shots with no hit end the step
+      if (c.hp < hpAt) { hpAt = c.hp; since = shots; } else if (shots - since >= 15) return { verb, found: true, killed: false, stuck: true, target: first.handle, at: [c.x, c.y, c.z], hp: c.hp, shots, reloads, lowHp };
       const held = await page.evaluate(() => { const W = /** @type {any} */ (window).__wildshard; return { ...(W.world.weapons.current?.state ?? {}), hp: W.state().player.health }; });
       lowHp = Math.min(lowHp, held.hp);
       if (held.hp <= 0) { await sleep(4000); continue; }
