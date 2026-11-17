@@ -415,7 +415,13 @@ try {
           // `reopen`: a new tab in the same browser context (the same device save), entered the same way, read again
           await page.close(); page = await context.newPage(); page.on('pageerror', (error) => { errors.push(error.message.slice(0, 200)); });
           const ms = await enter(page, how); await install(page);
-          run.steps.push({ step: name, loadMs: ms, after: await page.evaluate(read, { porch: PORCH, spawn: SPAWN, fields: FIELDS }) });
+          // TC-SHIP-e2 (opus-closer): the first read came at 130 frames, before the world's save reached the page (quest, flags and
+          // owned all empty); read once the wire carries quest rows, or after 20 s
+          let after = await page.evaluate(read, { porch: PORCH, spawn: SPAWN, fields: FIELDS });
+          for (const until = Date.now() + 20_000; Object.keys(after.quest ?? {}).length === 0 && Date.now() < until;) {
+            await page.waitForTimeout(500); after = await page.evaluate(read, { porch: PORCH, spawn: SPAWN, fields: FIELDS });
+          }
+          run.steps.push({ step: name, loadMs: ms, after });
           continue;
         }
         const did = await step(page, name);
