@@ -9,7 +9,7 @@
 //   node kit/scripts/play-probe.mjs [--staging | --base=<url>] [--entry=select|road|slug|chunk|both] [--layout=desktop|phone]
 //     [--do=<step>,<step>...] [--out=<dir>] [--seconds=<budget>] [--browser=chromium|webkit]
 //
-// Steps: `gun:<species>@<h>@<range>@<leash>@<s>` (fire at a wire row until it dies), `device` (the identity and save databases), `refresh` (the same tab again), `reopen` (a new tab), `wait:<s>`, `find:<name>` (drawn objects by name, with world positions), `face:<x>,<z>[,<y>]` (and pitch to height y), `shot:<name>` (a screenshot), `fire[:<n>]` (left click n times, one cycle apart), `reload`, `slot:<n>` (press digit n), `use` (E),
+// Steps: `gun:<species>@<h>@<range>@<leash>@<s>` (fire at a wire row until it dies), `pack:<species>@<reach>@<s>@<count>@<leash>` (hunt a roaming pack until this player holds <count> of its `dead:` flags), `watch:<species>@<s>` (the wire brain state of the nearest one), `device` (the identity and save databases), `refresh` (the same tab again), `reopen` (a new tab), `wait:<s>`, `find:<name>` (drawn objects by name, with world positions), `face:<x>,<z>[,<y>]` (and pitch to height y), `shot:<name>` (a screenshot), `fire[:<n>]` (left click n times, one cycle apart), `reload`, `slot:<n>` (press digit n), `use` (E),
 // `aim:<creature kind>` (turn to face the nearest one alive), `walk:<x>,<z>[,<stop>]` (hold W toward a point of the cell's frame, to within <stop> m, default 2),
 // `kill:<creature kind>[@<aim height>]` (walk within 25 m, aim and fire until it dies or 45 s pass; 8 hits with no kill mark a drawn corpse, skipped after), `shoot:<kind>` (aim, then fire once).
 // Default site: a local preview at http://127.0.0.1:5173 (`--base`); `--staging` is https://staging.wildshard.io. Never
@@ -66,9 +66,10 @@ function liveRows(species) {
   if (latest === null || latest === undefined) return [];
   const out = [];
   for (const [handle, info] of client.entities) {
-    if (info.cls?.cls !== 'animal' || (info.initial?.species !== species && info.initial?.kind !== species)) continue;
+    // a species, a wire kind, or a creature id prefix (`bandit.camp-3`: one camp's bodies, not the rushers roaming past it)
+    if (info.cls?.cls !== 'animal' || (info.initial?.species !== species && info.initial?.kind !== species && !String(info.id ?? '').endsWith(species) && !String(info.id ?? '').includes(`${species}.`))) continue;
     const f = client.fields(latest, handle);
-    if (f !== null && Boolean(f.alive)) out.push({ handle, x: Number(f.x), y: Number(f.y), z: Number(f.z), hp: Number(f.hp) });
+    if (f !== null && Boolean(f.alive)) out.push({ handle, id: String(info.id ?? ''), x: Number(f.x), y: Number(f.y), z: Number(f.z), hp: Number(f.hp), state: f.state ?? null });
   }
   return out;
 }
@@ -317,34 +318,56 @@ async function step(page, name) {
     return { verb, found: true, killed: false, swings };
   }
   if (verb === 'boss') { return { verb, ...(await boss(page, arg)) }; }
+  if (verb === 'pack') { return { verb, ...(await pack(page, arg)) }; }
+  if (verb === 'watch') {
+    // `watch:<species>@<seconds>`: the brain state the server sends for the nearest live <species> (the wire row's `state`,
+    // TC-NE24c), sampled every 300 ms while the probe stands; one line per change, with its distance and the player's hp
+    const [kind = arg, sec = '20'] = arg.split('@'), log = [], seen = {}; let last = '';
+    for (const ends = Date.now() + Number(sec) * 1000; Date.now() < ends; await sleep(300)) {
+      const s = await page.evaluate((k) => { const W = /** @type {any} */ (window), p = W.__wildshard.state().player.pos, hp = W.__wildshard.state().player.health;
+        const c = (W.__probeLive?.(k) ?? []).map((r) => ({ ...r, d: Math.hypot(r.x - p.x, r.z - p.z) })).sort((a, b) => a.d - b.d)[0] ?? null;
+        return c === null ? null : { id: c.id, state: c.state, d: Math.round(c.d * 10) / 10, hp }; }, kind);
+      if (s === null) continue;
+      seen[String(s.state)] = (seen[String(s.state)] ?? 0) + 1;
+      const line = `${s.id} ${String(s.state)}`; if (line !== last) { last = line; log.push(`${line} d${s.d} hp${Math.round(s.hp)}`); }
+    }
+    return { verb, seen, log: log.slice(0, 40) };
+  }
   if (verb === 'gun') {
     // `gun:<species>[@<aim height>[@<range>[@<leash>[@<seconds>]]]]`: the nearest live <species> on the wire (within <leash> m of
     // where the step began) is followed by its handle: walk within <range> m, aim down the sights at <aim height> over its feet and
     // fire until the wire says it is dead, reloading as needed. Unlike `kill`, which aims at a drawn body, this reads the server's row.
     // `@<open row>` (sixth): fire only while that wire row is set (the Dust Wyrm's `brasscap.wyrm-gullet`, its glowing weak point),
-    // and hold fire, without counting toward the stuck guard, while it is not or the body is under ground (a burrowed wyrm)
+    // and hold fire, without counting toward the stuck guard, while it is not. With no open row, hold while the body is under
+    // ground. The row alone gates a named weak point: the Wyrm rests at y -1.29 in its mound, which the old y gate took for
+    // burrowed, so the probe held fire through every open gullet (TC-SHIP-d2, opus-te2e5). `opens` counts the row's openings.
     const [kind = arg, h = '0.9', rg = '20', l = 'Infinity', sec = '60', open = ''] = arg.split('@'), height = Number(h), range = Number(rg), leash = Number(l);
-    let waits = 0;
+    let waits = 0, opens = 0, wasOpen = false; const rowLog = [];
     const home = await page.evaluate(() => /** @type {any} */ (window).__wildshard.state().player.pos);
     const live = () => page.evaluate(([k, at, far]) => { const W = /** @type {any} */ (window), p = W.__wildshard.state().player.pos;
       return (W.__probeLive?.(k) ?? []).filter((c) => Math.hypot(c.x - at.x, c.z - at.z) <= far).map((c) => ({ ...c, d: Math.hypot(c.x - p.x, c.z - p.z) })).sort((a, b) => a.d - b.d); }, [kind, { x: home.x, z: home.z }, leash]);
     const kills = () => page.evaluate(() => /** @type {any} */ (window).__workerClient?.()?.kills ?? 0), before = await kills();
     const first = (await live())[0]; if (first === undefined) return { verb, found: false };
-    const ends = Date.now() + Number(sec) * 1000; let shots = 0, reloads = 0, lowHp = 100, hpAt = first.hp, since = 0;
+    const ends = Date.now() + Number(sec) * 1000; let shots = 0, reloads = 0, lowHp = 100, hpAt = first.hp, since = 0, seen = null;
     while (Date.now() < ends) {
       const c = (await live()).find((row) => row.handle === first.handle);
-      if (c === undefined) return { verb, found: true, killed: true, target: first.handle, kills: (await kills()) - before, shots, reloads, lowHp };
+      if (c === undefined) return { verb, found: true, killed: true, target: first.handle, kills: (await kills()) - before, shots, reloads, lowHp, opens, rowLog };
       // a target out of the line of fire (a ledge row from below) once drained the whole reserve: 15 shots with no hit end the step
       if (c.hp < hpAt) { hpAt = c.hp; since = shots; } else if (shots - since >= 15) return { verb, found: true, killed: false, stuck: true, target: first.handle, at: [c.x, c.y, c.z], hp: c.hp, shots, reloads, lowHp };
       const held = await page.evaluate(() => { const W = /** @type {any} */ (window).__wildshard; return { ...(W.world.weapons.current?.state ?? {}), hp: W.state().player.health }; });
       lowHp = Math.min(lowHp, held.hp);
       if (held.hp <= 0) { await sleep(4000); continue; }
       if (c.d > range) { await walk(page, c.x, c.z, range * 0.8, 8000); continue; }
-      if (c.y < -0.5 || (open !== '' && !(await page.evaluate((row) => Boolean(/** @type {any} */ (window).__workerClientRow?.(row)), open)))) { since = shots; waits++; await aimAt(page, { pos: { x: c.x, y: Math.max(c.y, 0), z: c.z } }, height); await sleep(200); continue; }
+      const isOpen = open === '' ? c.y >= -0.5 : await page.evaluate((row) => Boolean(/** @type {any} */ (window).__workerClientRow?.(row)), open);
+      if (open !== '' && isOpen !== wasOpen) { wasOpen = isOpen; if (isOpen) opens++; if (rowLog.length < 40) rowLog.push(`${((Date.now() - ends) / 1000 + Number(sec)).toFixed(1)}s ${open}=${isOpen ? 1 : 0} hp${c.hp} d${c.d.toFixed(1)}`); }
+      if (!isOpen) { since = shots; waits++; await aimAt(page, { pos: { x: c.x, y: c.y, z: c.z } }, height); await sleep(200); continue; }
       if (held.magazine === 0 && !held.reloading) { if ((held.reserve ?? 0) <= 0) return { verb, found: true, killed: false, dry: true, shots, reloads, lowHp }; await page.keyboard.press('KeyR'); reloads++; await sleep(2500); continue; }
-      await aimAt(page, { pos: { x: c.x, y: c.y, z: c.z } }, height); await page.mouse.down({ button: 'right' }); await sleep(250); await fire(page, 1); await page.mouse.up({ button: 'right' }); shots++;
+      // lead a moving body (a charging rusher): its wire velocity over the last read, times the ~0.35 s from aim to the round
+      const now = Date.now(), lead = seen !== null && now - seen.t < 1500 ? 0.35 / ((now - seen.t) / 1000) : 0;
+      const ax = c.x + (seen === null ? 0 : (c.x - seen.x) * lead), az = c.z + (seen === null ? 0 : (c.z - seen.z) * lead); seen = { x: c.x, z: c.z, t: now };
+      await aimAt(page, { pos: { x: ax, y: c.y, z: az } }, height); await page.mouse.down({ button: 'right' }); await sleep(250); await fire(page, 1); await page.mouse.up({ button: 'right' }); shots++;
     }
-    return { verb, found: true, killed: false, target: first.handle, shots, reloads, lowHp, waits, hp: (await live()).find((row) => row.handle === first.handle)?.hp ?? null };
+    return { verb, found: true, killed: false, target: first.handle, shots, reloads, lowHp, waits, opens, rowLog, hp: (await live()).find((row) => row.handle === first.handle)?.hp ?? null };
   }
   if (verb === 'device') {
     // `device`: who this page says it is (the device identity keys in localStorage) and the save databases it holds
@@ -370,6 +393,46 @@ async function step(page, name) {
     })) };
   }
   throw new Error(`No probe step ${name}`);
+}
+
+/** `pack:<species>@<reach>@<seconds>@<count>@<leash>`: a roaming pack, the way a player hunts one (the Template's mosslings for
+ *  the Hermit's count, TC-SHIP-e2). Done when this player's flags hold <count> `dead:<species>:<n>` rows, the server's own kill
+ *  credit (a body that only ran out of view is no kill: the old `melee` step counted those). Each turn picks the nearest live
+ *  body whose `dead:` flag this player lacks, by its wire id, and chases it with no fixed leash (re-aimed every 1.5 s, so a
+ *  circling pack is followed); a body past <leash> m from the step's start (default 120) is left. With none live in reach, the
+ *  probe goes back to the start and stands: the pack is aggressive and comes in to bite, which brings it into reach. Swings
+ *  at its middle when within <reach>; at under 35 hp it backs off to heal; a death waits out the respawn, then walks back. */
+async function pack(page, arg) {
+  const [kind = arg, r = '2', sec = '600', n = '4', l = '120'] = arg.split('@'), reach = Number(r), count = Number(n), leash = Number(l);
+  const home = await page.evaluate(() => /** @type {any} */ (window).__wildshard.state().player.pos);
+  const look = () => page.evaluate(([k, h, far]) => {
+    const W = /** @type {any} */ (window), st = W.__wildshard.state(), p = st.player.pos, flags = W.__workerClient?.()?.flags ?? [];
+    const mine = flags.filter((f) => f.startsWith(`dead:${k}:`));
+    const key = (id) => /([\w.-]+:\d+)$/u.exec(id)?.[1] ?? id;
+    const rows = (W.__probeLive?.(k) ?? []).filter((c) => Math.hypot(c.x - h.x, c.z - h.z) <= far && !mine.includes(`dead:${key(c.id)}`))
+      .map((c) => ({ ...c, key: key(c.id), d: Math.hypot(c.x - p.x, c.z - p.z) })).sort((a, b) => a.d - b.d);
+    return { rows, mine, hp: st.player.health, p, seen: (W.__probeLive?.(k) ?? []).length };
+  }, [kind, { x: home.x, z: home.z }, leash]);
+  const t0 = Date.now(), ends = t0 + Number(sec) * 1000, log = [];
+  let swings = 0, chases = 0, waits = 0, heals = 0, deaths = 0, lowHp = 100, had = -1;
+  while (Date.now() < ends) {
+    const s = await look(); lowHp = Math.min(lowHp, s.hp);
+    if (s.mine.length !== had) { had = s.mine.length; log.push(`${((Date.now() - t0) / 1000).toFixed(0)}s ${s.mine.join(' ') || 'none'} at ${Math.round(s.p.x)},${Math.round(s.p.z)}`); }
+    if (s.mine.length >= count) return { found: true, done: true, mine: s.mine, swings, chases, waits, heals, deaths, lowHp, log };
+    if (s.hp <= 0) { deaths++; await sleep(5000); await walk(page, home.x, home.z, 3, 60_000); continue; }
+    if (s.hp < 35) { heals++; await walk(page, home.x, home.z, 3, 8000); await sleep(4000); continue; }
+    const c = s.rows[0];
+    if (c === undefined) {
+      // none live and owed: stand at the start (the pack comes in), facing round so the page keeps their rows in view
+      waits++; if (Math.hypot(s.p.x - home.x, s.p.z - home.z) > 4) await walk(page, home.x, home.z, 3, 20_000); else await sleep(1500);
+      continue;
+    }
+    if (c.d > reach) { chases++; await walk(page, c.x, c.z, reach * 0.7, 1500); continue; }
+    await aimAt(page, { pos: { x: c.x, y: c.y, z: c.z } }, 0.5);
+    await page.mouse.down(); await sleep(60); await page.mouse.up(); swings++; await sleep(420);
+  }
+  const last = await look();
+  return { found: true, done: false, mine: last.mine, seen: last.seen, swings, chases, waits, heals, deaths, lowHp, log };
 }
 
 /** `boss:<kind>@<reach>[@<aim height>]`: a told boss fight (the Template's Barrow Warden): stand off at about 0.8 x reach, sidestep
