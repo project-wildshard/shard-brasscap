@@ -5,7 +5,7 @@ import assert from 'node:assert/strict';
 import { Vector3 } from 'three';
 import { actRoutes } from '@wildshard/engine/sim/actRoutes';
 import { encounterRows } from '@wildshard/engine/sim/encounterRows';
-import { brasscapSim, killWhenOpen, PLAYER, TICKS } from './sim.ts';
+import { brasscapSim, kill, killWhenOpen, PLAYER, TICKS } from './sim.ts';
 
 // TEMPLATE-E2E TC-B5 (meta TEMPLATE-E2E-PLAN, J361): the Dust Wyrm at the bar. On the built cell's server a player who
 // read the wanted poster walks into the arena: the Wyrm's first phase strikes with its burst and its tail sweep, under half
@@ -63,5 +63,30 @@ test('the Dust Wyrm strikes with burst and sweep, adds the spit in its second ph
     assert.ok(host.flags.has('dead:dust-wyrm'));
     assert.ok(filed.facts.includes('brasscap.wyrm'), `the boss achievement is filed (${filed.facts.join(', ')})`);
     assert.ok(filed.coins.includes(20), 'the bounty pays 20');
+  } finally { sim.dispose(); }
+});
+
+// TEMPLATE-E2E TC-SHIP-d2 (opus-te2e5, 2026-11-17): the Wyrm's reach is world metres. Engine scales a strike's shape and
+// range by the actor's scale, so at spawn scale 5 the authored burst 7 m and sweep 8 m hit 35 to 40 m out: every spot in
+// the 16 m arena took a strike each beat, a player died every ~30 s and the Wyrm reset to full (staging v0.1.37, d2c).
+// A player 12 m off the mound, inside the arena, is outside both first-phase strikes and can shoot the gullet.
+test('a player 12 m off the mound is out of the burst and the sweep', async () => {
+  const { shard, sim } = await brasscapSim();
+  try {
+    const host = sim.host, player = host.players.get(PLAYER), wyrm = host.entities.get('dust-wyrm');
+    const fight = shard.encounters.find(row => row.entity === 'dust-wyrm');
+    if (player === undefined || wyrm === undefined || fight === undefined) throw new Error('Missing the player or the Wyrm');
+    // the rushers roam to the arena's mouth; only the Wyrm's own strikes count here
+    for (const id of ['bandit.rusher.1', 'bandit.rusher.2', 'bandit.rusher.3', 'bandit.rusher.4']) kill(sim, id);
+    const struck: string[] = [];
+    host.events.on('damage.dealt', ({ req }) => { for (const id of STRIKES) if (req.moveId === id || req.sourceTags.includes(id)) struck.push(id); }, host.scope);
+    const view = encounterRows(host).get(`encounter:${fight.id}`);
+    if (view === undefined) throw new Error('Missing the Wyrm encounter view');
+    for (let tick = 0; tick < 30 * TICKS; tick++) {
+      player.position.set(fight.arena.at[0], player.position.y, fight.arena.at[2] + 12); player.motor.resetAt(player.position);
+      host.step();
+    }
+    assert.ok(view().phase === 0 && wyrm.alive, 'the fight runs its first phase');
+    assert.deepEqual(struck, [], `no strike reaches 12 m (${struck.join(', ')})`);
   } finally { sim.dispose(); }
 });

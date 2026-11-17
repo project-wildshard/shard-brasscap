@@ -75,7 +75,7 @@
           "creature.bandit"
         ],
         "weight": 1,
-        "windup": 1.0
+        "windup": 1
       },
       {
         "active": 1.1,
@@ -100,11 +100,11 @@
         "cooldown": 0.5,
         "damage": 20,
         "id": "brasscap.wyrm.burst",
-        "range": 7,
+        "range": 1.4,
         "recover": 0.6,
         "shape": {
           "kind": "point",
-          "radius": 3
+          "radius": 1.4
         },
         "speed": 0,
         "tags": [
@@ -118,12 +118,12 @@
         "cooldown": 3,
         "damage": 14,
         "id": "brasscap.wyrm.spit",
-        "range": 20,
+        "range": 4,
         "recover": 0.8,
         "shape": {
           "halfAngle": 0.12,
           "kind": "wedge",
-          "length": 18
+          "length": 3.6
         },
         "speed": 0,
         "tags": [
@@ -137,12 +137,12 @@
         "cooldown": 2.5,
         "damage": 16,
         "id": "brasscap.wyrm.sweep",
-        "range": 8,
+        "range": 1.6,
         "recover": 1,
         "shape": {
           "halfAngle": 1.4,
           "kind": "arc",
-          "radius": 7
+          "radius": 1.4
         },
         "speed": 0,
         "tags": [
