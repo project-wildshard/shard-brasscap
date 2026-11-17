@@ -321,7 +321,10 @@ async function step(page, name) {
     // `gun:<species>[@<aim height>[@<range>[@<leash>[@<seconds>]]]]`: the nearest live <species> on the wire (within <leash> m of
     // where the step began) is followed by its handle: walk within <range> m, aim down the sights at <aim height> over its feet and
     // fire until the wire says it is dead, reloading as needed. Unlike `kill`, which aims at a drawn body, this reads the server's row.
-    const [kind = arg, h = '0.9', rg = '20', l = 'Infinity', sec = '60'] = arg.split('@'), height = Number(h), range = Number(rg), leash = Number(l);
+    // `@<open row>` (sixth): fire only while that wire row is set (the Dust Wyrm's `brasscap.wyrm-gullet`, its glowing weak point),
+    // and hold fire, without counting toward the stuck guard, while it is not or the body is under ground (a burrowed wyrm)
+    const [kind = arg, h = '0.9', rg = '20', l = 'Infinity', sec = '60', open = ''] = arg.split('@'), height = Number(h), range = Number(rg), leash = Number(l);
+    let waits = 0;
     const home = await page.evaluate(() => /** @type {any} */ (window).__wildshard.state().player.pos);
     const live = () => page.evaluate(([k, at, far]) => { const W = /** @type {any} */ (window), p = W.__wildshard.state().player.pos;
       return (W.__probeLive?.(k) ?? []).filter((c) => Math.hypot(c.x - at.x, c.z - at.z) <= far).map((c) => ({ ...c, d: Math.hypot(c.x - p.x, c.z - p.z) })).sort((a, b) => a.d - b.d); }, [kind, { x: home.x, z: home.z }, leash]);
@@ -337,10 +340,11 @@ async function step(page, name) {
       lowHp = Math.min(lowHp, held.hp);
       if (held.hp <= 0) { await sleep(4000); continue; }
       if (c.d > range) { await walk(page, c.x, c.z, range * 0.8, 8000); continue; }
+      if (c.y < -0.5 || (open !== '' && !(await page.evaluate((row) => Boolean(/** @type {any} */ (window).__workerClientRow?.(row)), open)))) { since = shots; waits++; await aimAt(page, { pos: { x: c.x, y: Math.max(c.y, 0), z: c.z } }, height); await sleep(200); continue; }
       if (held.magazine === 0 && !held.reloading) { if ((held.reserve ?? 0) <= 0) return { verb, found: true, killed: false, dry: true, shots, reloads, lowHp }; await page.keyboard.press('KeyR'); reloads++; await sleep(2500); continue; }
       await aimAt(page, { pos: { x: c.x, y: c.y, z: c.z } }, height); await page.mouse.down({ button: 'right' }); await sleep(250); await fire(page, 1); await page.mouse.up({ button: 'right' }); shots++;
     }
-    return { verb, found: true, killed: false, target: first.handle, shots, reloads, lowHp };
+    return { verb, found: true, killed: false, target: first.handle, shots, reloads, lowHp, waits, hp: (await live()).find((row) => row.handle === first.handle)?.hp ?? null };
   }
   if (verb === 'device') {
     // `device`: who this page says it is (the device identity keys in localStorage) and the save databases it holds
