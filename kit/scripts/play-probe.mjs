@@ -9,8 +9,8 @@
 //   node kit/scripts/play-probe.mjs [--staging | --base=<url>] [--entry=select|road|slug|chunk|both] [--layout=desktop|phone]
 //     [--do=<step>,<step>...] [--out=<dir>] [--seconds=<budget>] [--browser=chromium|webkit]
 //
-// Steps: `wait:<s>`, `find:<name>` (drawn objects by name, with world positions), `face:<x>,<z>[,<y>]` (and pitch to height y), `shot:<name>` (a screenshot), `fire[:<n>]` (left click n times, one cycle apart), `reload`, `slot:<n>` (press digit n), `use` (E),
-// `aim:<creature kind>` (turn to face the nearest one alive), `walk:<x>,<z>` (hold W toward a point of the cell's frame),
+// Steps: `gun:<species>@<h>@<range>@<leash>@<s>` (fire at a wire row until it dies), `device` (the identity and save databases), `refresh` (the same tab again), `reopen` (a new tab), `wait:<s>`, `find:<name>` (drawn objects by name, with world positions), `face:<x>,<z>[,<y>]` (and pitch to height y), `shot:<name>` (a screenshot), `fire[:<n>]` (left click n times, one cycle apart), `reload`, `slot:<n>` (press digit n), `use` (E),
+// `aim:<creature kind>` (turn to face the nearest one alive), `walk:<x>,<z>[,<stop>]` (hold W toward a point of the cell's frame, to within <stop> m, default 2),
 // `kill:<creature kind>[@<aim height>]` (walk within 25 m, aim and fire until it dies or 45 s pass; 8 hits with no kill mark a drawn corpse, skipped after), `shoot:<kind>` (aim, then fire once).
 // Default site: a local preview at http://127.0.0.1:5173 (`--base`); `--staging` is https://staging.wildshard.io. Never
 // production (J205): a join is a write. Chromium runs headless, muted, capped at 60 fps, and the page closes at the end.
@@ -101,6 +101,7 @@ function read({ porch, spawn, fields = [] }) {
     quest: wire?.quests ?? st.quest, flags: wire?.flags ?? area?.flags ?? [], coins: wire?.paid ?? null, owned: wire?.owned ?? null,
     wire: wire === undefined ? null : { rows: wire.rows, drawn: wire.drawn, hits: wire.hits, kills: wire.kills, hp: wire.hp, fights: wire.fights, cell: wire.cell },
     prompt: world.hud?.promptText ?? null, frames: wire?.frames ?? null, fights: wire?.fights ?? null,
+    save: wire === undefined ? null : { restored: wire.restored, savedTick: wire.savedTick, savedOk: wire.savedOk, closed: wire.closed, own: wire.own },
     fields: Object.fromEntries(fields.map((name) => [name, W.__workerClientRow?.(name) ?? null])),
     talk: document.querySelector('.ws-quest-talk.show .ws-quest-talk-name')?.textContent ?? null,
     // TC-B10: the health bars on screen (engine ui/Combat.ts): each shown bar's label and its fill, and the damage numbers up
@@ -248,7 +249,7 @@ async function step(page, name) {
     return { verb, rows };
   }
   if (verb === 'shot') { await page.screenshot({ path: join(out, `${arg}.png`) }); return { verb }; }
-  if (verb === 'walk') { const [x, z] = arg.split(',').map(Number); return { verb, near: Math.round(await walk(page, x, z)) }; }
+  if (verb === 'walk') { const [x, z, stop = 2] = arg.split(',').map(Number); return { verb, near: Math.round(await walk(page, x, z, stop)) }; }
   if (verb === 'aim' || verb === 'shoot') {
     const c = await nearest(page, arg); if (c === null) return { verb, found: false };
     await aimAt(page, c); if (verb === 'shoot') await fire(page, 1);
@@ -295,15 +296,19 @@ async function step(page, name) {
     return { verb, said: said.map((b) => `${b.name}: ${b.text.slice(0, 80)}${b.choices.length > 0 ? ` [${b.choices.join(' | ')}]` : ''}`) };
   }
   if (verb === 'melee') {
-    // `melee:<kind>[@<reach>]`: walk within reach of the nearest live <kind> (the wire's rows), face its middle, swing until it
+    // `melee:<kind>[@<reach>[@<leash>]]`: walk within reach of the nearest live <kind> (the wire's rows), face its middle, swing until it
     // dies or 60 s pass. A melee kit item strikes the body whose aim point is within its range of the look.
-    const [kind = arg, r = '1.8'] = arg.split('@'), reach = Number(r);
-    const live = () => page.evaluate((k) => { const W = /** @type {any} */ (window), p = W.__wildshard.state().player.pos;
-      return (W.__probeLive?.(k) ?? []).map((c) => ({ ...c, d: Math.hypot(c.x - p.x, c.z - p.z) })).sort((a, b) => a.d - b.d); }, kind);
+    // `@<leash>`: only bodies within that many metres of where the step began (a fleeing pack once led the probe 300 m off)
+    const [kind = arg, r = '1.8', l = 'Infinity'] = arg.split('@'), reach = Number(r), leash = Number(l);
+    const home = await page.evaluate(() => /** @type {any} */ (window).__wildshard.state().player.pos);
+    const live = () => page.evaluate(([k, h, far]) => { const W = /** @type {any} */ (window), p = W.__wildshard.state().player.pos;
+      return (W.__probeLive?.(k) ?? []).filter((c) => Math.hypot(c.x - h.x, c.z - h.z) <= far).map((c) => ({ ...c, d: Math.hypot(c.x - p.x, c.z - p.z) })).sort((a, b) => a.d - b.d); }, [kind, { x: home.x, z: home.z }, leash]);
     const first = await live(); if (first.length === 0) return { verb, found: false };
+    // `kills`: this page's confirmed kills in the step (a body that only ran out of the leash or the wire's view is no kill)
+    const kills = () => page.evaluate(() => /** @type {any} */ (window).__workerClient?.()?.kills ?? 0), before = await kills();
     const count = first.length, ends = Date.now() + 60_000; let swings = 0;
     while (Date.now() < ends) {
-      const rows = await live(); if (rows.length < count) return { verb, found: true, killed: true, swings, left: rows.length };
+      const rows = await live(); if (rows.length < count) return { verb, found: true, killed: true, kills: (await kills()) - before, swings, left: rows.length };
       const c = rows[0];
       if (c.d > reach) { await walk(page, c.x, c.z, reach * 0.7, 6000); continue; }
       await aimAt(page, { pos: { x: c.x, y: c.y, z: c.z } }, 0.5);
@@ -312,6 +317,52 @@ async function step(page, name) {
     return { verb, found: true, killed: false, swings };
   }
   if (verb === 'boss') { return { verb, ...(await boss(page, arg)) }; }
+  if (verb === 'gun') {
+    // `gun:<species>[@<aim height>[@<range>[@<leash>[@<seconds>]]]]`: the nearest live <species> on the wire (within <leash> m of
+    // where the step began) is followed by its handle: walk within <range> m, aim down the sights at <aim height> over its feet and
+    // fire until the wire says it is dead, reloading as needed. Unlike `kill`, which aims at a drawn body, this reads the server's row.
+    const [kind = arg, h = '0.9', rg = '20', l = 'Infinity', sec = '60'] = arg.split('@'), height = Number(h), range = Number(rg), leash = Number(l);
+    const home = await page.evaluate(() => /** @type {any} */ (window).__wildshard.state().player.pos);
+    const live = () => page.evaluate(([k, at, far]) => { const W = /** @type {any} */ (window), p = W.__wildshard.state().player.pos;
+      return (W.__probeLive?.(k) ?? []).filter((c) => Math.hypot(c.x - at.x, c.z - at.z) <= far).map((c) => ({ ...c, d: Math.hypot(c.x - p.x, c.z - p.z) })).sort((a, b) => a.d - b.d); }, [kind, { x: home.x, z: home.z }, leash]);
+    const kills = () => page.evaluate(() => /** @type {any} */ (window).__workerClient?.()?.kills ?? 0), before = await kills();
+    const first = (await live())[0]; if (first === undefined) return { verb, found: false };
+    const ends = Date.now() + Number(sec) * 1000; let shots = 0, reloads = 0, lowHp = 100;
+    while (Date.now() < ends) {
+      const c = (await live()).find((row) => row.handle === first.handle);
+      if (c === undefined) return { verb, found: true, killed: true, target: first.handle, kills: (await kills()) - before, shots, reloads, lowHp };
+      const held = await page.evaluate(() => { const W = /** @type {any} */ (window).__wildshard; return { ...(W.world.weapons.current?.state ?? {}), hp: W.state().player.health }; });
+      lowHp = Math.min(lowHp, held.hp);
+      if (held.hp <= 0) { await sleep(4000); continue; }
+      if (c.d > range) { await walk(page, c.x, c.z, range * 0.8, 8000); continue; }
+      if (held.magazine === 0 && !held.reloading) { if ((held.reserve ?? 0) <= 0) return { verb, found: true, killed: false, dry: true, shots, reloads, lowHp }; await page.keyboard.press('KeyR'); reloads++; await sleep(2500); continue; }
+      await aimAt(page, { pos: { x: c.x, y: c.y, z: c.z } }, height); await page.mouse.down({ button: 'right' }); await sleep(250); await fire(page, 1); await page.mouse.up({ button: 'right' }); shots++;
+    }
+    return { verb, found: true, killed: false, target: first.handle, shots, reloads, lowHp };
+  }
+  if (verb === 'device') {
+    // `device`: who this page says it is (the device identity keys in localStorage) and the save databases it holds
+    return { verb, ...(await page.evaluate(async () => {
+      const ids = {}; for (let i = 0; i < localStorage.length; i++) { const k = localStorage.key(i) ?? ''; if (k.includes('identity')) ids[k] = JSON.parse(localStorage.getItem(k) ?? 'null')?.player ?? null; }
+      const dbs = typeof indexedDB.databases === 'function' ? (await indexedDB.databases()).map((d) => d.name) : null;
+      // the solo server's saves (engine saves/indexed.ts): every key in each wildshard-saves store, its device id and its size
+      const saves = {};
+      for (const name of (dbs ?? []).filter((n) => n.startsWith('wildshard-saves'))) {
+        saves[name] = await new Promise((done) => {
+          const open = indexedDB.open(name); open.onerror = () => { done({ error: String(open.error) }); };
+          open.onsuccess = () => {
+            const db = open.result; if (!db.objectStoreNames.contains('saves')) { db.close(); done({ stores: [...db.objectStoreNames] }); return; }
+            const rows = {}, cursor = db.transaction('saves').objectStore('saves').openCursor();
+            cursor.onsuccess = () => { const c = cursor.result; if (c === null) { db.close(); done(rows); return; }
+              const v = typeof c.value === 'string' ? c.value : JSON.stringify(c.value);
+              rows[String(c.key)] = String(c.key).includes('identity') ? JSON.parse(v)?.player ?? v.slice(0, 80) : v.length; c.continue(); };
+            cursor.onerror = () => { db.close(); done({ error: String(cursor.error) }); };
+          };
+        });
+      }
+      return { ids, keys: localStorage.length, dbs, saves, origin: location.origin };
+    })) };
+  }
   throw new Error(`No probe step ${name}`);
 }
 
@@ -396,11 +447,19 @@ const killer = setTimeout(() => { console.error('play-probe: over budget'); void
 try {
   for (const how of entries) {
     const context = await browser.newContext(phone ? { viewport: { width: 402, height: 874 }, deviceScaleFactor: 3, isMobile: true, hasTouch: true } : { viewport: { width: 1400, height: 933 } });
+    // `--device=<id>`: this context's pages say they are that device (`device:<uuid>`), as a returning player's would
+    if (flag('device', '') !== '') await context.addInitScript((id) => { try { if (localStorage.getItem('device:wildshard.save.v2.identity') === null) localStorage.setItem('device:wildshard.save.v2.identity', JSON.stringify({ player: id, name: 'Guest' })); } catch { /* no storage */ } }, flag('device', ''));
     await saveFixture(context, { scope: 'device', key: 'firstPlayDone', data: true });
     await saveFixture(context, { scope: 'device', key: 'devMode', data: true });
     await saveFixture(context, { scope: 'global', key: 'settings', merge: true, data: { music: false, sfx: false, volume: 0, ...(phone ? { tier: 'phone' } : {}) } });
-    let page = await context.newPage(); const errors = [];
-    page.on('pageerror', (error) => { errors.push(error.message.slice(0, 200)); });
+    let page = await context.newPage(); const errors = [], logs = [];
+    // the page's own words about its seat, door and cell (`--logs=<regex>`, default door/seat/resume/regrid/save)
+    const watchLog = (p) => { p.on('pageerror', (error) => { errors.push(error.message.slice(0, 200)); });
+      // `--ws`: every socket's open, close and text frames (the door's control words), into the same log
+      if (process.argv.includes('--ws')) p.on('websocket', (ws) => { logs.push(`ws open ${ws.url().replace(/\?.*$/u, '')}`); ws.on('close', () => { logs.push(`${new Date().toISOString().slice(11, 19)} ws close`); });
+        let n = 0; ws.on('framereceived', (f) => { if (typeof f.payload === 'string' && n++ < 40) logs.push(`${new Date().toISOString().slice(11, 19)} ws in ${f.payload.slice(0, 200)}`); }); });
+      p.on('console', (m) => { if (new RegExp(flag('logs', 'door|seat|resume|regrid|save|claim|ticket'), 'iu').test(m.text())) logs.push(`${new Date().toISOString().slice(11, 19)} ${m.type()} ${m.text().slice(0, 240)}`); }); };
+    watchLog(page);
     const run = { entry: how };
     try {
       run.loadMs = await enter(page, how);
@@ -411,17 +470,20 @@ try {
       await page.screenshot({ path: join(out, `${how}-${phone ? 'phone' : 'desktop'}-enter.png`) }).catch(() => undefined);
       run.steps = [];
       for (const name of steps) {
-        if (name === 'reopen') {
-          // `reopen`: a new tab in the same browser context (the same device save), entered the same way, read again
-          await page.close(); page = await context.newPage(); page.on('pageerror', (error) => { errors.push(error.message.slice(0, 200)); });
+        if (name === 'reopen' || name === 'refresh') {
+          // `reopen`: a new tab in the same browser context (the same device save), entered the same way, read again;
+          // `refresh`: the same tab loads the page again
+          if (name === 'reopen') { await page.close(); page = await context.newPage(); watchLog(page); }
           const ms = await enter(page, how); await install(page);
           // TC-SHIP-e2 (opus-closer): the first read came at 130 frames, before the world's save reached the page (quest, flags and
           // owned all empty); read once the wire carries quest rows, or after 20 s
-          let after = await page.evaluate(read, { porch: PORCH, spawn: SPAWN, fields: FIELDS });
-          for (const until = Date.now() + 20_000; Object.keys(after.quest ?? {}).length === 0 && Date.now() < until;) {
-            await page.waitForTimeout(500); after = await page.evaluate(read, { porch: PORCH, spawn: SPAWN, fields: FIELDS });
+          // read once the wire carries quest rows and a cell, or after `--reopenWait` seconds (default 60), with a timeline
+          let after = await page.evaluate(read, { porch: PORCH, spawn: SPAWN, fields: FIELDS }); const t0 = Date.now(), timeline = [];
+          for (const until = t0 + Number(flag('reopenWait', '60')) * 1000; (Object.keys(after.quest ?? {}).length === 0 || !(after.wire?.cell > 0)) && Date.now() < until;) {
+            timeline.push(`${((Date.now() - t0) / 1000).toFixed(1)}s cell${after.wire?.cell} rows${after.wire?.rows} frames${after.frames} own:${after.save?.own}`);
+            await page.waitForTimeout(2000); after = await page.evaluate(read, { porch: PORCH, spawn: SPAWN, fields: FIELDS });
           }
-          run.steps.push({ step: name, loadMs: ms, after });
+          run.steps.push({ step: name, loadMs: ms, waitedMs: Date.now() - t0, timeline, device: (await step(page, 'device')), after });
           continue;
         }
         const did = await step(page, name);
@@ -432,7 +494,7 @@ try {
       run.error = String(error).slice(0, 300);
       await page.screenshot({ path: join(out, `${how}-${phone ? 'phone' : 'desktop'}-error.png`) }).catch(() => undefined);
     }
-    run.errors = errors.slice(0, 8);
+    run.errors = errors.slice(0, 8); run.logs = logs.slice(-60);
     report.runs.push(run);
     await context.close();
   }
