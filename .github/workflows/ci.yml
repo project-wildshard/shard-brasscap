@@ -84,5 +84,20 @@ jobs:
       - run: pnpm check
       # SS3: the shard source builds, validates and reports as an author would (wildshard check .).
       - run: pnpm check:shard
+      - name: Build the owned source product for grid admission
+        run: pnpm exec wildshard build . tmp/ci21-grid/product --folder-only
+      - name: Preserve CI21 grid eviction and restore assertions
+        if: ${{ !cancelled() }}
+        run: |
+          mkdir -p tmp/ci21-grid
+          node --test test/ci21-grid-reentry.test.mjs > tmp/ci21-grid/raw.tap
+          cat tmp/ci21-grid/raw.tap
+      - name: Keep actual grid owner results
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: ci21-grid-owner-${{ github.job }}-${{ github.run_id }}
+          path: tmp/ci21-grid/
+          if-no-files-found: ignore
       - run: node --test test/tooling/chrome-keychain.test.mjs
       - run: pnpm test:hooks
