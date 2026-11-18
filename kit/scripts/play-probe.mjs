@@ -361,7 +361,9 @@ async function step(page, name) {
       const isOpen = open === '' ? c.y >= -0.5 : await page.evaluate((row) => Boolean(/** @type {any} */ (window).__workerClientRow?.(row)), open);
       if (open !== '' && isOpen !== wasOpen) { wasOpen = isOpen; if (isOpen) opens++; if (rowLog.length < 40) rowLog.push(`${((Date.now() - ends) / 1000 + Number(sec)).toFixed(1)}s ${open}=${isOpen ? 1 : 0} hp${c.hp} d${c.d.toFixed(1)}`); }
       if (!isOpen) { since = shots; waits++; await aimAt(page, { pos: { x: c.x, y: c.y, z: c.z } }, height); await sleep(200); continue; }
-      if (held.magazine === 0 && !held.reloading) { if ((held.reserve ?? 0) <= 0) return { verb, found: true, killed: false, dry: true, shots, reloads, lowHp }; await page.keyboard.press('KeyR'); reloads++; await sleep(2500); continue; }
+      // rounds left in the gun (`ammo`), not `magazine`, its capacity: a dry lever read 6 and kept firing blanks (TC-B9 d2)
+      const rounds = typeof held.ammo === 'number' ? held.ammo : held.magazine;
+      if (rounds === 0 && !held.reloading) { if ((held.reserve ?? 0) <= 0) return { verb, found: true, killed: false, dry: true, shots, reloads, lowHp }; await page.keyboard.press('KeyR'); reloads++; await sleep(2500); continue; }
       // lead a moving body (a charging rusher): its wire velocity over the last read, times the ~0.35 s from aim to the round
       const now = Date.now(), lead = seen !== null && now - seen.t < 1500 ? 0.35 / ((now - seen.t) / 1000) : 0;
       const ax = c.x + (seen === null ? 0 : (c.x - seen.x) * lead), az = c.z + (seen === null ? 0 : (c.z - seen.z) * lead); seen = { x: c.x, z: c.z, t: now };
