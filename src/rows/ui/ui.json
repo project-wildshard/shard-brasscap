@@ -88,6 +88,18 @@
         "label": "Pull the lever (the side door)",
         "radius": 2.0,
         "scene": "brasscap.lever.pull"
+      },
+      {
+        "at": [
+          2.0,
+          1.6,
+          -61.5
+        ],
+        "id": "brasscap.gate.use",
+        "label": "Open the canyon gate",
+        "radius": 2.0,
+        "scene": "brasscap.gate.open",
+        "unless": "brasscap.gate.open"
       }
     ],
     "itemActions": [
