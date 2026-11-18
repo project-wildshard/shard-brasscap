@@ -10,8 +10,8 @@ import { Vector3 } from 'three';
 import { loadRapier } from '@wildshard/engine/physics/rapier';
 import { outputDescriptor, serverReadsFile } from '@wildshard/engine/game/shardfile/outputDescriptor';
 import { createShardfileSim, type ShardfileSimPorts, type ShardfileSimulation } from '@wildshard/engine/game/plugin/simulation';
-import { loadHeadlessProduct } from '@wildshard/engine/host/headlessProduct';
-import { productHeadlessSections } from '@wildshard/engine/host/headlessSections';
+import { loadHeadlessFolder } from '@wildshard/engine/host/headlessFolder';
+import { folderHeadlessSections } from '@wildshard/engine/host/headlessSections';
 import type { Shardfile } from '@wildshard/format/shardSchema';
 
 const ROOT = resolve(import.meta.dirname, '..');
@@ -20,7 +20,7 @@ export const PLAYER = 'actor.player';
 export const TICKS = 60;
 
 export async function product(): Promise<{ shard: Shardfile; assets: Map<string, Uint8Array>; sections: ReadonlyMap<string, unknown> }> {
-  const loaded = await loadHeadlessProduct(BUILT);
+  const loaded = await loadHeadlessFolder(BUILT);
   const descriptor = outputDescriptor(loaded.shardfile);
   if (descriptor === undefined) throw new Error('brasscap-mesa has no output descriptor: run `pnpm check:shard` first');
   const server = descriptor.index.files.filter(file => serverReadsFile(file, loaded.shardfile.terrain?.collider)
@@ -29,7 +29,7 @@ export async function product(): Promise<{ shard: Shardfile; assets: Map<string,
     Uint8Array.from(readFileSync(resolve(BUILT, file.path)))]));
   // The product's sections carry its decisions, moves and targets, as the cell server reads them (engine `cellWorld.ts`):
   // without them the Wyrm runs no decision and falls back to its native chase.
-  return { shard: loaded.shardfile, assets, sections: productHeadlessSections(loaded) };
+  return { shard: loaded.shardfile, assets, sections: folderHeadlessSections(loaded) };
 }
 
 function physicsBytes(): Uint8Array {
