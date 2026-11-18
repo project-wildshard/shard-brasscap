@@ -61,7 +61,10 @@ for (const row of owner.products) test(`${row.slug}: evict and re-enter with kit
     const restored = snapshotSimHost(again.host);
     for (const field of ['flags', 'quests', 'slots', 'adapters']) assert.deepEqual(restored[field], saved[field], field);
     again.host.step(); assert.equal(again.host.state.tick, saved.state.tick + 1);
-    for (const flag of saved.flags) assert.equal(again.host.flags.has(flag), true);
+    // A `dead:<id>` flag is the world's: engine 0.1.35's respawn step clears it while that body is alive, and this test
+    // sets the quest's kill flags without killing anyone. The restore itself kept them (the deepEqual above).
+    const living = flag => flag.startsWith('dead:') && again.host.entities.get(flag.slice(5))?.alive === true;
+    for (const flag of saved.flags) if (!living(flag)) assert.equal(again.host.flags.has(flag), true, flag);
   } finally { again.dispose(); }
 });
 
