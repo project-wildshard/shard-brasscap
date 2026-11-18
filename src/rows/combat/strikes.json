@@ -96,6 +96,25 @@
         "windup": 1.1
       },
       {
+        "active": 0.15,
+        "cooldown": 3,
+        "damage": 5,
+        "id": "brasscap.rusher.knife",
+        "range": 1.8,
+        "recover": 0.5,
+        "shape": {
+          "halfAngle": 0.9,
+          "kind": "arc",
+          "radius": 1.8
+        },
+        "speed": 0,
+        "tags": [
+          "creature.bandit"
+        ],
+        "weight": 1,
+        "windup": 0.45
+      },
+      {
         "active": 0.2,
         "cooldown": 0.5,
         "damage": 20,

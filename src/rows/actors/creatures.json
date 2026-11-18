@@ -44,6 +44,20 @@
         "wanderRadius": 0
       },
       {
+        "attackCooldownTicks": 180,
+        "awareRadius": 10,
+        "id": "brasscap.bandit.rusher",
+        "kind": "pursue",
+        "leashRadius": 11,
+        "returnSpeed": 3,
+        "speed": 4.2,
+        "stopDistance": 1.4,
+        "thinkDivisor": 3,
+        "turnRate": 6,
+        "wanderEveryTicks": 360,
+        "wanderRadius": 1.5
+      },
+      {
         "fallDrop": 1.5,
         "grazeSpeed": 1.2,
         "id": "brasscap.wyrmling.ram",
@@ -80,48 +94,7 @@
         "recoveryField": "winded"
       }
     ],
-    "groups": [
-      {
-        "attackSeconds": 0.42,
-        "biteCue": "bandit_bite",
-        "biteRadius": 1.6,
-        "breakoffSeconds": 1.0,
-        "coneAngle": 1.2,
-        "dashSeconds": 1.5,
-        "hearing": [
-          3,
-          6,
-          10,
-          16
-        ],
-        "home": [
-          3.5,
-          -76.5
-        ],
-        "howlCue": "bandit_howl",
-        "id": "brasscap.bandit.rushers",
-        "kind": "pack",
-        "leaderVariant": "rusher",
-        "members": [
-          "bandit.rusher.1",
-          "bandit.rusher.2",
-          "bandit.rusher.3",
-          "bandit.rusher.4"
-        ],
-        "ringMaxRadius": 9,
-        "ringMinRadius": 6,
-        "runSpeed": 7.5,
-        "shadowMaxRadius": 20,
-        "shadowMinRadius": 14,
-        "sightRadius": 16,
-        "smellRadius": 18,
-        "snarlCue": "bandit_snarl",
-        "telegraphSeconds": 0.5,
-        "thinkDivisor": 6,
-        "trotSpeed": 3,
-        "yipCue": "bandit_yip"
-      }
-    ],
+    "groups": [],
     "spawns": [
       {
         "at": [
@@ -317,65 +290,65 @@
         "at": [
           1.5,
           0,
-          -74.5
+          -64.5
         ],
-        "brain": "brasscap.bandit.rushers",
+        "brain": "brasscap.bandit.rusher",
         "id": "bandit.rusher.1",
         "respawn": 120,
         "scale": 1,
         "seed": 61,
         "species": "brasscap.bandit",
-        "strike": null,
+        "strike": "brasscap.rusher.knife",
         "variant": "rusher",
-        "yaw": 3.14159
+        "yaw": 0
       },
       {
         "at": [
           4.5,
           0,
-          -75.5
+          -65.5
         ],
-        "brain": "brasscap.bandit.rushers",
+        "brain": "brasscap.bandit.rusher",
         "id": "bandit.rusher.2",
         "respawn": 120,
         "scale": 1,
         "seed": 62,
         "species": "brasscap.bandit",
-        "strike": null,
+        "strike": "brasscap.rusher.knife",
         "variant": "rusher",
-        "yaw": 3.14159
+        "yaw": 0
       },
       {
         "at": [
-          2.0,
+          2,
           0,
-          -78.0
+          -68
         ],
-        "brain": "brasscap.bandit.rushers",
+        "brain": "brasscap.bandit.rusher",
         "id": "bandit.rusher.3",
         "respawn": 120,
         "scale": 1,
         "seed": 63,
         "species": "brasscap.bandit",
-        "strike": null,
+        "strike": "brasscap.rusher.knife",
         "variant": "rusher",
-        "yaw": 3.14159
+        "yaw": 0
       },
       {
         "at": [
           5.5,
           0,
-          -78.5
+          -68.5
         ],
-        "brain": "brasscap.bandit.rushers",
+        "brain": "brasscap.bandit.rusher",
         "id": "bandit.rusher.4",
         "respawn": 120,
         "scale": 1,
         "seed": 64,
         "species": "brasscap.bandit",
-        "strike": null,
+        "strike": "brasscap.rusher.knife",
         "variant": "rusher",
-        "yaw": 3.14159
+        "yaw": 0
       },
       {
         "at": [

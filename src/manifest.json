@@ -216,9 +216,9 @@
     {
       "id": "rushers",
       "name": "Rusher hollow",
-      "r": 8,
+      "r": 6,
       "x": 3.5,
-      "z": -76.5
+      "z": -66.5
     },
     {
       "id": "pit",
