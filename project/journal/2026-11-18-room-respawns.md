@@ -27,3 +27,9 @@ Hero recaptured for the new content stamp: `wildshard dev` 0.4.1 still
 answers 404 for `/shardfiles/brasscap-mesa/discovery.json`, so the page
 was served by sharddev main's own `packages/dev/bin/wildshard.mjs dev src`
 (the fix, `632396a1`). `check:shard` passes; 9 sim tests green.
+
+Publish run 44249982958 stopped at "Install phone WebKit for prepare":
+`Cannot find module 'playwright/package.json'` from `@wildshard/sharddev`.
+sdk 0.4 moved prepare and its playwright into `@wildshard/dev` (under
+`@wildshard/cli`), so the step now resolves playwright there, falling
+back to the sdk for an older pin.
