@@ -45,6 +45,9 @@ importers:
       playwright:
         specifier: 1.65.0
         version: 1.65.0
+      vite:
+        specifier: 8.3.0
+        version: 8.3.0(@types/node@24.3.1)
 
 packages:
 
