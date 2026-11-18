@@ -52,6 +52,16 @@
         "kind": "bandit",
         "label": "Tin bandit",
         "lockable": true,
+        "temperament": {
+          "brain": "none",
+          "reaction": "aggressive",
+          "leash": 25,
+          "assist": 0,
+          "home": {
+            "speed": 2,
+            "stop": 1.5
+          }
+        },
         "variants": [
           {
             "hp": 35,
@@ -106,6 +116,16 @@
         "kind": "brawler",
         "label": "Bandit brawler",
         "lockable": true,
+        "temperament": {
+          "brain": "brasscap.bandit.brawler",
+          "reaction": "aggressive",
+          "leash": 25,
+          "assist": 0,
+          "home": {
+            "speed": 2,
+            "stop": 1.5
+          }
+        },
         "variants": [
           {
             "hp": 60,
@@ -142,6 +162,16 @@
         "kind": "wyrm",
         "label": "Dust Wyrm",
         "lockable": true,
+        "temperament": {
+          "brain": "none",
+          "reaction": "aggressive",
+          "leash": 25,
+          "assist": 0,
+          "home": {
+            "speed": 2,
+            "stop": 1.5
+          }
+        },
         "variants": [
           {
             "hp": 440,
@@ -178,6 +208,16 @@
         "kind": "wyrmling",
         "label": "Dust wyrmling",
         "lockable": true,
+        "temperament": {
+          "brain": "brasscap.wyrmling.ram",
+          "reaction": "aggressive",
+          "leash": 25,
+          "assist": 0,
+          "home": {
+            "speed": 2,
+            "stop": 1.5
+          }
+        },
         "variants": [
           {
             "hp": 30,
@@ -221,6 +261,16 @@
         "kind": "drake",
         "label": "Sand drake",
         "lockable": true,
+        "temperament": {
+          "brain": "none",
+          "reaction": "aggressive",
+          "leash": 25,
+          "assist": 0,
+          "home": {
+            "speed": 2,
+            "stop": 1.5
+          }
+        },
         "variants": [
           {
             "hp": 40,
