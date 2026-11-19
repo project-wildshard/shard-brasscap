@@ -54,7 +54,7 @@
       "windup": 1.2,
       "moundX": 2,
       "moundZ": -100,
-      "reach": 4,
+      "reach": 8,
       "lungeReach": 8
     },
     "reads": [

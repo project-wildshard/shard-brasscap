@@ -424,6 +424,9 @@ function town(props: THREE.Group, dyn: THREE.Group, signs: THREE.Group, gate: TH
   place(cf, 0, 1.4, 0, 0, Math.PI / 2, 0); place(cf, wx, 0, wz, 0.4); b.add(cf);
   col(wx, 1.2, wz, 0.9, 1.2, 1.6);
   barrel(b, 15.3, -55.5); crate(b, 21.5, -53, 0, 0.8, 0.2); crate(b, 20.5, -54.2, 0, 0.6, 0.5); barrel(b, 11, -50.5);
+  // QA 11-19 row 44: the arena's ammo cache (`brasscap.ammo.arena`), inside the Wyrm's 16 m ring by its mouth, so a fight
+  // that runs long never leaves a player without lever rounds
+  crate(b, 6.5, -86.5, groundY(6.5, -86.5), 0.8, 0.3); crate(b, 6.6, -86.4, groundY(6.5, -86.5) + 0.8, 0.5, 0.9); barrel(b, 7.6, -85.6);
   fence(b, 8.5, -44, 12.5, -42.5);
   // ----- Gate (2, -62) -----
   const GW = 7.2, GH = 5.6;

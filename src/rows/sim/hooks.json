@@ -58,6 +58,11 @@
         "id": "brasscap.strongbox",
         "type": 102,
         "value": 3
+      },
+      {
+        "id": "brasscap.ammo.arena",
+        "type": 102,
+        "value": 3
       }
     ]
   }

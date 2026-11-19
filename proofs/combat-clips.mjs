@@ -115,6 +115,10 @@ await scene('wyrm', async () => {
     });
     await aimAt(page, head ?? [wyrm.x, wyrm.y + 4, wyrm.z]);
     const seen = await look(page);
+    if (seen.held?.ammo === 0 && seen.held.reserve === 0) { // out of this gun's rounds: the next gun, as a player would
+      const at = GUNS.findIndex(gun => String(seen.held.id).endsWith(gun));
+      note('switch', await hold(GUNS[(at + 1) % GUNS.length])); await sleep(1500); continue;
+    }
     if (seen.held?.ammo === 0) { await press(page, 'reload'); await sleep(2000); continue; }
     if (seen.hp <= 0) { await sleep(4000); continue; }
     await press(page, 'attack'); await sleep(750);

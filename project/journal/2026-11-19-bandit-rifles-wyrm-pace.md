@@ -21,3 +21,14 @@ a damageable zone".
 
 The engine half (the creature rounds, the attack.fire clip, the Wyrm's death and the held quest card) is engine
 8dc63b261, in v0.1.53.
+
+## Rev 13: the Wyrm comes out of its pit, and the arena has ammo
+
+- The local proof on engine main with rev 12 showed the Wyrm still hugging its mound: `reach` held its surfacing to 4 m
+  off the middle. It is 8 m now. The leap still lands it back on the mound, so the burst's 7 m ring stays where it was
+  and a player 12 m out keeps room to shoot. The leap test stands its player 10 m out and reads the landing off the body.
+- The clip bot ran dry at half the Wyrm's health (96 rounds, most on armour while the gullet was shut), and the arena had
+  no ammo. An ammo cache (+30 lever rounds) now sits inside the ring by the arena's mouth, a crate, a tin and a barrel.
+  One scene restocks one gun (engine keys item actions by scene), so it restocks the lever.
+- The proof bot stops at z -88 (the arena is 16 m round the mound; at -83.4 the fight never started) and switches guns
+  when one runs out. With the switch it killed the Wyrm in about 3 minutes.

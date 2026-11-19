@@ -80,6 +80,17 @@
       },
       {
         "at": [
+          6.5,
+          0.8,
+          -86.5
+        ],
+        "id": "brasscap.ammo.arena",
+        "label": "Ammo cache (+30 lever rounds)",
+        "radius": 2.5,
+        "scene": "brasscap.ammo.arena"
+      },
+      {
+        "at": [
           7.0,
           1.6,
           -60.3
@@ -142,6 +153,11 @@
         "action": 3,
         "item": "weapon.brasscap-lever",
         "scene": "brasscap.strongbox"
+      },
+      {
+        "action": 3,
+        "item": "weapon.brasscap-lever",
+        "scene": "brasscap.ammo.arena"
       }
     ],
     "itemFields": [
