@@ -97,7 +97,7 @@ await scene('wyrm', async () => {
   for (const point of ROUTE.slice(wanted.has('guns') ? 2 : 0)) await walkTo(page, point, 2);
   note('ammo', await use(page, AMMO3)); note('strongbox', await use(page, STRONGBOX)); note('lever', await use(page, LEVER));
   for (const point of DOOR) await walkTo(page, point, 1.2);
-  await walkTo(page, { x: 2, z: -84 }, 0.6, 20);
+  await walkTo(page, { x: 2, z: -88 }, 0.6, 20); // inside the arena (16 m round the mound at z -100), or the fight never starts
   let down = false, weak = false;
   for (const ends = Date.now() + Math.min(left() - 20_000, 360_000); Date.now() < ends && !down;) {
     const wyrm = (await look(page)).creatures.find(c => c.species === 'brasscap.wyrm');
