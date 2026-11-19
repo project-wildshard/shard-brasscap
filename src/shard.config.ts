@@ -4,11 +4,12 @@
 // skin files the tools/ generators write into sources/; the tin bandit is a `world.creature` (generators/bandit.ts).
 // `wildshard build` runs `generate`; `wildshard watch` reads its describe() and streams the scene's parts to a page.
 import type { Shardfile } from '@wildshard/format/shardSchema';
-import { emitPlatformSections } from '@wildshard/sharddev/platformSections';
 import type { GeneratedProject, ProjectGenerationContext } from '@wildshard/sharddev/projectGeneration';
 import { defineShard, type SceneShard } from '@wildshard/sharddev/scene/shard';
 import { buildBrasscap } from './generators/world';
 import { sideDoorMover } from './generators/sideDoor';
+import { groundY } from './generators/terrain';
+import { WYRM_MOVES, wyrmSpots } from './generators/wyrm';
 import decisionScripts from './rows/sim/scripts.json' with { type: 'json' };
 import identity from './identity.json' with { type: 'json' };
 import creatures from './rows/actors/creatures.json' with { type: 'json' };
@@ -71,14 +72,15 @@ function gameplay(shard: Shardfile): Shardfile {
   } as Shardfile;
 }
 
-const scene = defineShard(identity, buildBrasscap, { extend: gameplay });
+// the Wyrm's decision script (behaviour/wyrm.as), the serpent moves it runs and the mound it leaps onto (CC26)
+const scene = defineShard(identity, buildBrasscap, { extend: gameplay, decisions: decisionScripts, moves: WYRM_MOVES, spots: wyrmSpots(groundY) });
 
-/** The scene's shardfile plus the subjects' bytes and the Wyrm's decision script (sharddev cooks that and the gate). */
+/** The scene's shardfile (with the Wyrm's decision script, moves and spot) plus the subjects' bytes. */
 async function build(ctx: ProjectGenerationContext): Promise<GeneratedProject> {
   const subjects = await ctx.cached({ id: 'brasscap-subjects', inputs: SUBJECTS }, inputs => new Map([...inputs].map(([file, bytes]) => [file.replaceAll('/', '-'), bytes])));
   const assets = new Map([...subjects.values()].map(bytes => [ctx.asset(bytes), bytes]));
   const product = await scene(ctx);
-  return { ...product, output: { ...product.output, assets, platform: emitPlatformSections(new Map([['sim/scripts', decisionScripts]])) } };
+  return { ...product, output: { ...product.output, assets } };
 }
 
 /** The generator `wildshard build` runs, with the scene shard's describe() and gameplay() for `wildshard watch`. */

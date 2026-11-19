@@ -114,3 +114,22 @@ export function wyrmCreature(world: ShardWorld): void {
     clips: wyrmClips(), attackSpan: WYRM_ATTACK_SPAN, family: 'toon', ...WYRM_BINDING,
   });
 }
+
+/** The mound's middle (encounters.json's arena): where every leap lands and the burst rings out. */
+export const WYRM_MOUND = { x: 2, z: -100 } as const;
+/**
+ * ONE-FORMAT CC26: the Wyrm's moves (`actors/moves`), run by `behaviour/wyrm.as`: it burrows (the depth field to 1),
+ * relocates to the point the decision writes under the nearest player, surfaces, leaps 9 m up onto the mound and turns
+ * there to face the player (the leap lands facing away; the sweep and the spit strike ahead).
+ */
+export const WYRM_MOVES = [
+  { id: 'brasscap.wyrm.burrow', kind: 'burrow', field: 'brasscap.wyrm-depth', rate: 2 },
+  { id: 'brasscap.wyrm.relocate', kind: 'relocate', point: { kind: 'fields', x: 'brasscap.wyrm-x', z: 'brasscap.wyrm-z' }, facing: 'target' },
+  { id: 'brasscap.wyrm.surface', kind: 'surface', field: 'brasscap.wyrm-depth', rate: 2 },
+  { id: 'brasscap.wyrm.leap', kind: 'leap', to: { kind: 'spot', spot: 'brasscap.wyrm.mound' }, height: 9 },
+  { id: 'brasscap.wyrm.face', kind: 'relocate', point: { kind: 'spot', spot: 'brasscap.wyrm.mound' }, facing: 'target' },
+] as const;
+/** The leap's landing spot (a `world/targets` spot, `defineShard`'s `spots`): the mound's middle on the sand. */
+export function wyrmSpots(groundY: (x: number, z: number) => number): { id: string; at: [number, number, number]; yaw: number }[] {
+  return [{ id: 'brasscap.wyrm.mound', at: [WYRM_MOUND.x, groundY(WYRM_MOUND.x, WYRM_MOUND.z), WYRM_MOUND.z], yaw: 0 }];
+}
