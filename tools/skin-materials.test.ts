@@ -5,7 +5,6 @@ import { describe, it } from 'node:test'
 
 import { parseGlbData } from '@wildshard/format/glbCost'
 import { skinLookRules, validateSkinAssets } from '@wildshard/format/skinAssets'
-import { buildBandit, buildBanditSkin } from './bandit.ts'
 import { ATTACK_SPAN, buildWyrm, buildWyrmSkin, sha256 } from './wyrm.ts'
 
 interface Json {
@@ -133,9 +132,8 @@ function source(glb: Buffer, materials?: unknown) {
 }
 
 describe('skin binding materials (TE-ENG10)', (): void => {
-  it("draws the bandit's eye and the Wyrm's gullet as a second GLB part, mapped to the look's glow", (): void => {
+  it("draws the Wyrm's gullet as a second GLB part, mapped to the look's glow (the bandit's eye: bandit-source.test.ts)", (): void => {
     for (const [glb, skinOf, part, corners] of [
-      [buildBandit(), buildBanditSkin, 'Eye', 48],
       [buildWyrm(), buildWyrmSkin, 'Gullet', 24],
     ] as const) {
       const length = glb.readUInt32LE(12),

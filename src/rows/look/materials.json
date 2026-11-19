@@ -30,36 +30,6 @@
       {
         "animation": {
           "parameters": {
-            "attackSpan": 0.6
-          },
-          "recipe": "platform.clips"
-        },
-        "id": "brasscap.bandit.look",
-        "material": null,
-        "parameters": {
-          "skin": "8059b65753f0b38d85b2a7a14848842282c8f14c52ffcc3c83089997d8591765"
-        },
-        "recipe": "platform.skin",
-        "species": "brasscap.bandit"
-      },
-      {
-        "animation": {
-          "parameters": {
-            "attackSpan": 0.6
-          },
-          "recipe": "platform.clips"
-        },
-        "id": "brasscap.brawler.look",
-        "material": null,
-        "parameters": {
-          "skin": "8059b65753f0b38d85b2a7a14848842282c8f14c52ffcc3c83089997d8591765"
-        },
-        "recipe": "platform.skin",
-        "species": "brasscap.brawler"
-      },
-      {
-        "animation": {
-          "parameters": {
             "attackSpan": 1.5
           },
           "recipe": "platform.clips"

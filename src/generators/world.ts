@@ -6,15 +6,17 @@
 // - the cleanroom's `colliders` list is one invisible solid box each (part `colliders`);
 // - the horizon mesas ring at 150 to 195 m round (0, -50) (the cleanroom's 150 to 320): a shard's parts stay in its cell,
 //   and a mesa over one of the cell's four entryways is left out; the sand flattens to road height past 195 m (from 150);
-// - the creatures are the shard's live ones (`shard.config.ts`: the tin bandits, targets and the Dust Wyrm from the data
-//   shard's rows and GLBs), not the cleanroom's posed meshes; `actors.ts` keeps those poses for stage 6 (AP23, creatures
-//   from code); the gate starts shut and the Wyrm under the sand, as the cleanroom's default shot;
+// - the creatures are the shard's live ones, not the cleanroom's posed meshes: the tin bandit and the brawler are
+//   `world.creature`s on the kit biped (`bandit.ts`, ONE-FORMAT CC13), the targets and the Dust Wyrm the data shard's rows
+//   and GLBs (`shard.config.ts`); `actors.ts` keeps the cleanroom's poses; the gate starts shut and the Wyrm under the
+//   sand, as the cleanroom's default shot;
 // - the gate's doors and their collider are panel `brasscap.gate` (`world.part(..., { panel })`): the bandit quest's
 //   `targets.panels` row hides both once the gate opens, as the data shard's `gate.door` node did;
 // - the viewmodel, AO bake and lamp bake are the cleanroom's own runtime and lean path, not world.
 import * as THREE from 'three';
 import { animate, flicker, solid, type ShardWorld } from '@wildshard/sharddev/scene/author';
 import { cowboy } from './actors';
+import { banditCreatures } from './bandit';
 import { groundColour, groundY, trailX } from './terrain';
 import { clouds, mesaSky, PAL, SUN_DIR } from './sky';
 import { Batch, box, cyl, facet, halo, hash, paint, place, rand, rr, seed, textTexture } from './util';
@@ -543,4 +545,5 @@ export function buildBrasscap(world: ShardWorld): void {
   }, { panel: 'brasscap.poster' });
   // the cleanroom's player capsule starts on the porch at (-1.6, 2.6), looking down the canyon (yaw 0)
   world.spawn(-1.6, 0.35, 2.6, 0);
+  banditCreatures(world);
 }

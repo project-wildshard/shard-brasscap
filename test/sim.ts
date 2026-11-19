@@ -9,6 +9,7 @@ import { resolve } from 'node:path';
 import { Vector3 } from 'three';
 import { loadRapier } from '@wildshard/engine/physics/rapier';
 import { outputDescriptor, serverReadsFile } from '@wildshard/engine/game/shardfile/outputDescriptor';
+import { serverSkinRigs } from '@wildshard/engine/game/shardfile/serverSkinRigs';
 import { createShardfileSim, type ShardfileSimPorts, type ShardfileSimulation } from '@wildshard/engine/game/plugin/simulation';
 import { loadHeadlessFolder } from '@wildshard/engine/host/headlessFolder';
 import { folderHeadlessSections } from '@wildshard/engine/host/headlessSections';
@@ -23,8 +24,10 @@ export async function product(): Promise<{ shard: Shardfile; assets: Map<string,
   const loaded = await loadHeadlessFolder(BUILT);
   const descriptor = outputDescriptor(loaded.shardfile);
   if (descriptor === undefined) throw new Error('brasscap-mesa has no output descriptor: run `pnpm check:shard` first');
-  const server = descriptor.index.files.filter(file => serverReadsFile(file, loaded.shardfile.terrain?.collider)
-    && (file.name === undefined || file.kind === 'wasm' || file.kind === 'tile'));
+  // the skin rigs too (engine `serverSkinRigs`): a body on a kit skeleton reads its rest rig from its GLB (CC13's bandits)
+  const rigs = serverSkinRigs(loaded.shardfile);
+  const server = descriptor.index.files.filter(file => rigs.has(file.hash) || (serverReadsFile(file, loaded.shardfile.terrain?.collider)
+    && (file.name === undefined || file.kind === 'wasm' || file.kind === 'tile')));
   const assets = new Map(server.map(file => [file.commons === true ? `commons:${file.hash}` : file.hash,
     Uint8Array.from(readFileSync(resolve(BUILT, file.path)))]));
   // The product's sections carry its decisions, moves and targets, as the cell server reads them (engine `cellWorld.ts`):

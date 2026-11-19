@@ -1,8 +1,8 @@
 // Brasscap Mesa's shard source (meta SHARD-SOURCE AP16): the canyon is three.js scene source (generators/, brasscap-cleanroom
 // e311139 on the sdk's scene API), and the gameplay is the data shard's (SS3): the authored rows are rows/ (one file per
-// shardfile section), the gate's behaviour is sources/gate.as, and the subjects (lever rifle, tin bandit, Dust Wyrm) are the
-// GLBs and skin files the tools/ generators write into sources/. `wildshard build` runs `generate`; `wildshard watch` reads
-// its describe() and streams the scene's parts to a page.
+// shardfile section), the gate's behaviour is sources/gate.as, and the subjects (lever rifle, Dust Wyrm) are the GLBs and
+// skin files the tools/ generators write into sources/; the tin bandit is a `world.creature` (generators/bandit.ts).
+// `wildshard build` runs `generate`; `wildshard watch` reads its describe() and streams the scene's parts to a page.
 import type { Shardfile } from '@wildshard/format/shardSchema';
 import { emitPlatformSections } from '@wildshard/sharddev/platformSections';
 import type { GeneratedProject, ProjectGenerationContext } from '@wildshard/sharddev/projectGeneration';
@@ -40,9 +40,9 @@ import traversal from './rows/world/traversal.json' with { type: 'json' };
 import weather from './rows/world/weather.json' with { type: 'json' };
 import authored from './rows/files.json' with { type: 'json' };
 
-/** The subjects the authored rows name by hash (the lever rifle, the tin bandit and the Dust Wyrm, with their skin
- *  files) and the sand ring's client script: authored bytes, not cooked. Their `files` rows are rows/files.json. */
-const SUBJECTS = ['sources/rifle.glb', 'sources/bandit.glb', 'sources/wyrm.glb', 'sources/bandit.skin.json', 'sources/wyrm.skin.json', 'assets/wasm/sand.wasm'] as const;
+/** The subjects the authored rows name by hash (the lever rifle and the Dust Wyrm, with its skin file) and the sand ring's
+ *  client script: authored bytes, not cooked. Their `files` rows are rows/files.json. */
+const SUBJECTS = ['sources/rifle.glb', 'sources/wyrm.glb', 'sources/wyrm.skin.json', 'assets/wasm/sand.wasm'] as const;
 
 /**
  * The gameplay rows over the scene's shardfile. The scene writes the look, ground, edge, spawn, props and colliders; the
@@ -65,7 +65,9 @@ function gameplay(shard: Shardfile): Shardfile {
     files: [...shard.files, ...authored.files], library: [...shard.library, ...authored.library], critical: [...shard.critical, ...authored.critical],
     budgets: { ...shard.budgets, library: { resident: library.resident + authored.budgets.library.resident, compressed: library.compressed + authored.budgets.library.compressed } },
     serverBudget: authored.serverBudget,
-    rows: { ...shard.rows, ...species.rows, ...strikes.rows, ...loot.rows, ...days.rows, ...weather.rows, ...looks.rows, ...compendium.rows },
+    // the scene's creatures (the bandit and the brawler, generators/bandit.ts) keep their species and look rows
+    rows: { ...shard.rows, ...species.rows, ...strikes.rows, ...loot.rows, ...days.rows, ...weather.rows, ...looks.rows, ...compendium.rows,
+      species: [...shard.rows.species, ...species.rows.species], looks: [...shard.rows.looks, ...looks.rows.looks] },
   } as Shardfile;
 }
 

@@ -34,19 +34,6 @@
       "triangles": 488
     },
     {
-      "compressed": 523,
-      "critical": false,
-      "decoded": 1019,
-      "dependencies": [
-        "eeb89188619132e11973b37d5dfe12d6af95d9fcb47084cebe3a2ed4eb5a7247"
-      ],
-      "draws": 0,
-      "gpu": 0,
-      "hash": "8059b65753f0b38d85b2a7a14848842282c8f14c52ffcc3c83089997d8591765",
-      "kind": "json",
-      "triangles": 0
-    },
-    {
       "compressed": 574,
       "critical": false,
       "decoded": 1118,
@@ -58,32 +45,19 @@
       "hash": "eaca25036cc30b1cbece326d11b2ceceee1254d7fa72d4141984d16f992af6d5",
       "kind": "json",
       "triangles": 0
-    },
-    {
-      "compressed": 78816,
-      "critical": false,
-      "decoded": 80468,
-      "dependencies": [],
-      "draws": 4,
-      "gpu": 71736,
-      "hash": "eeb89188619132e11973b37d5dfe12d6af95d9fcb47084cebe3a2ed4eb5a7247",
-      "kind": "glb",
-      "triangles": 366
     }
   ],
   "library": [
     "24a4d4c1292677b1c984b5c0d3497ae2929528bf511df475f80cc20945bb08ec",
     "24f9098ec8408090fbb2b5ffb9febefc17f0e2866032166c706958f4e8a8bbe4",
     "5821f33aa00e9acd2f4c0a29129978ee7006a879d163ce1463ae476031bfabcf",
-    "8059b65753f0b38d85b2a7a14848842282c8f14c52ffcc3c83089997d8591765",
-    "eaca25036cc30b1cbece326d11b2ceceee1254d7fa72d4141984d16f992af6d5",
-    "eeb89188619132e11973b37d5dfe12d6af95d9fcb47084cebe3a2ed4eb5a7247"
+    "eaca25036cc30b1cbece326d11b2ceceee1254d7fa72d4141984d16f992af6d5"
   ],
   "critical": [],
   "budgets": {
     "library": {
-      "compressed": 783645,
-      "resident": 26821992
+      "compressed": 704306,
+      "resident": 26668769
     },
     "sim": {
       "compressed": 0,
