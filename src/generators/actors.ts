@@ -60,41 +60,49 @@ export function cowboy(x: number, z: number, ry: number): THREE.Group {
   return g;
 }
 
-/** The Dust Wyrm: plated segments along a curve, a toothed maw, a glowing core when weak. */
-export function wyrm(points: readonly (readonly [number, number, number])[], { weak = false } = {}): THREE.Group {
-  const g = new THREE.Group();
-  const curve = new THREE.CatmullRomCurve3(points.map((p) => new THREE.Vector3(...p)));
-  const b = new Batch();
-  const N = 14;
-  const body = '#b9532f', plate = '#d77446', belly = '#8f3a24';
-  const up = new THREE.Vector3(0, 1, 0);
-  for (let i = 0; i < N; i++) {
-    const t = i / (N - 1);
-    const p = curve.getPoint(t), tan = curve.getTangent(t);
-    const r = 1.35 + Math.sin(t * Math.PI) * 0.45 + t * 0.4;
-    const segL = curve.getLength() / (N - 1) * 0.92;
-    const q = new THREE.Quaternion().setFromUnitVectors(up, tan);
-    const seg = facet(new THREE.CylinderGeometry(r, r * 0.86, segL, 9, 1), 0.1, i);
-    paint(seg, i % 2 === 1 ? body : plate, 0.08, i);
-    seg.applyQuaternion(q); seg.translate(p.x, p.y, p.z); b.add(seg);
-    const rim = facet(new THREE.CylinderGeometry(r * 1.06, r, 0.3, 9, 1), 0.04, i + 50);
-    paint(rim, belly, 0.05, i);
-    rim.applyQuaternion(q); rim.translate(p.x + tan.x * segL * 0.42, p.y + tan.y * segL * 0.42, p.z + tan.z * segL * 0.42); b.add(rim);
-    // dorsal spikes
-    if (i < N - 1) {
-      const sp = new THREE.ConeGeometry(0.22, 0.6, 4); sp.translate(0, r + 0.15, 0);
-      const f = sp.toNonIndexed(); f.computeVertexNormals(); paint(f, '#e8d6b0', 0.05); f.deleteAttribute('uv');
-      f.applyQuaternion(new THREE.Quaternion().setFromUnitVectors(up, new THREE.Vector3(0, 0, 1)));
-      f.applyQuaternion(q); f.translate(p.x, p.y, p.z); b.add(f);
-    }
+/** The Dust Wyrm's plates: 14 segments, tail first. ONE-FORMAT CC25 splits the cleanroom's `wyrm()` into these builders:
+ *  the posed cleanroom shots (`wyrm()` below) and the live serpent (`wyrm.ts`) both draw with them. */
+export const WYRM_SEGMENTS = 14;
+const WYRM_BODY = '#b9532f', WYRM_PLATE = '#d77446', WYRM_BELLY = '#8f3a24';
+/** The head ring's radius: the maw. */
+export const WYRM_MAW = 2.5;
+/** Where the glowing core sits: just inside the maw, along the head's opening. */
+export const WYRM_CORE_IN = 0.35;
+const UP = new THREE.Vector3(0, 1, 0);
+/** The cleanroom's spike turn: +y onto +z, before the segment's own turn. */
+const SPIKE_ROLL = new THREE.Quaternion().setFromUnitVectors(UP, new THREE.Vector3(0, 0, 1));
+
+/** Segment `i`'s radius (tail 0 to head 13): fattest just past the middle, the head end wider than the tail. */
+export function wyrmRadius(i: number): number {
+  const t = i / (WYRM_SEGMENTS - 1);
+  return 1.35 + Math.sin(t * Math.PI) * 0.45 + t * 0.4;
+}
+
+/** Segment `i`'s plated drum and belly rim, `segL` long and centred on `p`, its axis turned from +y by `q` onto `tan`, and
+ *  (but at the head end) its dorsal spike, turned by `roll` before `q` (default the cleanroom's). */
+export function wyrmSegment(b: Batch, i: number, segL: number, q: THREE.Quaternion, p: THREE.Vector3, tan: THREE.Vector3, roll: THREE.Quaternion = SPIKE_ROLL): void {
+  const r = wyrmRadius(i);
+  const seg = facet(new THREE.CylinderGeometry(r, r * 0.86, segL, 9, 1), 0.1, i);
+  paint(seg, i % 2 === 1 ? WYRM_BODY : WYRM_PLATE, 0.08, i);
+  seg.applyQuaternion(q); seg.translate(p.x, p.y, p.z); b.add(seg);
+  const rim = facet(new THREE.CylinderGeometry(r * 1.06, r, 0.3, 9, 1), 0.04, i + 50);
+  paint(rim, WYRM_BELLY, 0.05, i);
+  rim.applyQuaternion(q); rim.translate(p.x + tan.x * segL * 0.42, p.y + tan.y * segL * 0.42, p.z + tan.z * segL * 0.42); b.add(rim);
+  // dorsal spikes
+  if (i < WYRM_SEGMENTS - 1) {
+    const sp = new THREE.ConeGeometry(0.22, 0.6, 4); sp.translate(0, r + 0.15, 0);
+    const f = sp.toNonIndexed(); f.computeVertexNormals(); paint(f, '#e8d6b0', 0.05); f.deleteAttribute('uv');
+    f.applyQuaternion(roll);
+    f.applyQuaternion(q); f.translate(p.x, p.y, p.z); b.add(f);
   }
-  // head: a wide ring of plates with teeth pointing in, opening along the end tangent
-  const end = curve.getPoint(1), et = curve.getTangent(1);
-  const hq = new THREE.Quaternion().setFromUnitVectors(up, et);
-  const R = 2.5;
-  const head = facet(new THREE.CylinderGeometry(R, 1.6, 1.4, 10, 1, true), 0.1, 99); paint(head, plate, 0.1, 9);
+}
+
+/** The head at `end`, opening the way `hq` turns +y: a wide ring of plates, its lip, 12 teeth pointing in and the throat. */
+export function wyrmHead(b: Batch, hq: THREE.Quaternion, end: THREE.Vector3): void {
+  const R = WYRM_MAW;
+  const head = facet(new THREE.CylinderGeometry(R, 1.6, 1.4, 10, 1, true), 0.1, 99); paint(head, WYRM_PLATE, 0.1, 9);
   head.applyQuaternion(hq); head.translate(end.x, end.y, end.z); b.add(head);
-  const lip = facet(new THREE.TorusGeometry(R, 0.28, 5, 10), 0.05, 7); paint(lip, body, 0.1, 3);
+  const lip = facet(new THREE.TorusGeometry(R, 0.28, 5, 10), 0.05, 7); paint(lip, WYRM_BODY, 0.1, 3);
   lip.rotateX(Math.PI / 2); lip.translate(0, 0.7, 0); lip.applyQuaternion(hq); lip.translate(end.x, end.y, end.z); b.add(lip);
   for (let i = 0; i < 12; i++) {
     const a = (i / 12) * Math.PI * 2;
@@ -105,10 +113,31 @@ export function wyrm(points: readonly (readonly [number, number, number])[], { w
   const throat = new THREE.CircleGeometry(R * 0.9, 10); throat.rotateX(-Math.PI / 2); throat.translate(0, 0.2, 0);
   const tf = throat.toNonIndexed(); tf.computeVertexNormals(); paint(tf, '#2a120c', 0); tf.deleteAttribute('uv');
   tf.applyQuaternion(hq); tf.translate(end.x, end.y, end.z); b.add(tf);
+}
+
+/** The glowing core, 0.75 m round. */
+export function wyrmCore(): THREE.BufferGeometry {
+  return new THREE.IcosahedronGeometry(0.75, 0);
+}
+
+/** The Dust Wyrm posed along a curve (the cleanroom's shots): its plates, its maw, a glowing core when weak. */
+export function wyrm(points: readonly (readonly [number, number, number])[], { weak = false } = {}): THREE.Group {
+  const g = new THREE.Group();
+  const curve = new THREE.CatmullRomCurve3(points.map((p) => new THREE.Vector3(...p)));
+  const b = new Batch();
+  for (let i = 0; i < WYRM_SEGMENTS; i++) {
+    const t = i / (WYRM_SEGMENTS - 1);
+    const p = curve.getPoint(t), tan = curve.getTangent(t);
+    const segL = curve.getLength() / (WYRM_SEGMENTS - 1) * 0.92;
+    wyrmSegment(b, i, segL, new THREE.Quaternion().setFromUnitVectors(UP, tan), p, tan);
+  }
+  // head: opening along the end tangent
+  const end = curve.getPoint(1), et = curve.getTangent(1);
+  wyrmHead(b, new THREE.Quaternion().setFromUnitVectors(UP, et), end);
   g.add(b.mesh(std({ roughness: 0.7 })));
   if (weak) {
-    const core = new THREE.Mesh(new THREE.IcosahedronGeometry(0.75, 0), new THREE.MeshBasicMaterial({ color: new THREE.Color('#ffb428').multiplyScalar(4) }));
-    core.position.copy(end).addScaledVector(et, 0.35); g.add(core);
+    const core = new THREE.Mesh(wyrmCore(), new THREE.MeshBasicMaterial({ color: new THREE.Color('#ffb428').multiplyScalar(4) }));
+    core.position.copy(end).addScaledVector(et, WYRM_CORE_IN); g.add(core);
     const l = new THREE.PointLight('#ffa020', 40, 14, 2); l.position.copy(end).addScaledVector(et, 1.6); g.add(l);
   }
   return g;

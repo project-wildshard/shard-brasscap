@@ -17,6 +17,7 @@ import * as THREE from 'three';
 import { animate, flicker, solid, type ShardWorld } from '@wildshard/sharddev/scene/author';
 import { cowboy } from './actors';
 import { banditCreatures } from './bandit';
+import { wyrmCreature } from './wyrm';
 import { groundColour, groundY, trailX } from './terrain';
 import { clouds, mesaSky, PAL, SUN_DIR } from './sky';
 import { Batch, box, cyl, facet, halo, hash, paint, place, rand, rr, seed, textTexture } from './util';
@@ -546,4 +547,5 @@ export function buildBrasscap(world: ShardWorld): void {
   // the cleanroom's player capsule starts on the porch at (-1.6, 2.6), looking down the canyon (yaw 0)
   world.spawn(-1.6, 0.35, 2.6, 0);
   banditCreatures(world);
+  wyrmCreature(world);
 }

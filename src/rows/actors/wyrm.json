@@ -1,0 +1,47 @@
+{
+  "species": {
+    "aggressive": true,
+    "dims": {
+      "bodyHalfLen": 2.08,
+      "bodyRadius": 0.44,
+      "bodyY": 0.44,
+      "feet": [],
+      "halfWidth": 0.44,
+      "headRadius": 0.5,
+      "legLen": 0.01
+    },
+    "kind": "wyrm",
+    "label": "Dust Wyrm",
+    "lockable": true,
+    "temperament": {
+      "brain": "none",
+      "reaction": "aggressive",
+      "leash": 25,
+      "assist": 0,
+      "home": {
+        "speed": 2,
+        "stop": 1.5
+      }
+    },
+    "variants": [
+      {
+        "hp": 440,
+        "id": "dust",
+        "label": "Dust Wyrm",
+        "mods": {
+          "chargeDamage": 0,
+          "chargeDist": 1,
+          "damageTaken": 1,
+          "relentless": false,
+          "speed": 1
+        },
+        "rarity": "rare",
+        "scale": [
+          5,
+          5
+        ],
+        "weight": 0
+      }
+    ]
+  }
+}
