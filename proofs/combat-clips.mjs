@@ -20,7 +20,7 @@ const wanted = new Set(flag('scenes', 'bandits,guns,wyrm').split(','));
 const budget = Number(flag('seconds', '900')) * 1000, started = Date.now();
 const left = () => budget - (Date.now() - started);
 
-const RACK = { x: -2.2, z: -0.92 }, AMMO3 = { x: 13.6, z: -50.2 }, STRONGBOX = { x: 21.5, z: -53 }, LEVER = { x: 7, z: -60.3 };
+const RACK = { x: -2.2, z: -0.92 }, AMMO3 = { x: 13.6, z: -50.2 }, STRONGBOX = { x: 21.5, z: -53 }, LEVER = { x: 7, z: -60.3 }, CACHE = { x: 6.5, z: -86.5 };
 const ROUTE = [{ x: 3, z: -8 }, { x: 4, z: -20 }, { x: 4, z: -40 }, { x: 8, z: -48 }];
 const DOOR = [{ x: -3.3, z: -59.5 }, { x: -3.3, z: -64.5 }, { x: 0, z: -72 }];
 const GUNS = ['brasscap-lever', 'brasscap-scattergun', 'brasscap-long-rifle'];
@@ -98,11 +98,11 @@ await scene('wyrm', async () => {
   note('ammo', await use(page, AMMO3)); note('strongbox', await use(page, STRONGBOX)); note('lever', await use(page, LEVER));
   for (const point of DOOR) await walkTo(page, point, 1.2);
   await walkTo(page, { x: 2, z: -88 }, 0.6, 20); // inside the arena (16 m round the mound at z -100), or the fight never starts
-  let down = false, weak = false;
+  let down = false, weak = false, dry = 0;
   for (const ends = Date.now() + Math.min(left() - 20_000, 360_000); Date.now() < ends && !down;) {
     const wyrm = (await look(page)).creatures.find(c => c.species === 'brasscap.wyrm');
     if (wyrm === undefined) { await walkTo(page, { x: 2, z: -86.5 }, 0.6, 3); await sleep(500); continue; }
-    if (!wyrm.alive || wyrm.hp <= 0) { down = true; break; }
+    if (!wyrm.alive && wyrm.hp <= 0) { down = true; break; } // both: a burrowed Wyrm can read not-alive for a frame
     if (!weak && wyrm.hp <= 220) { weak = true; await shot('wyrm-weak'); }
     const head = await page.evaluate(() => {
       let at = null;
@@ -116,9 +116,13 @@ await scene('wyrm', async () => {
     await aimAt(page, head ?? [wyrm.x, wyrm.y + 4, wyrm.z]);
     const seen = await look(page);
     if (seen.held?.ammo === 0 && seen.held.reserve === 0) { // out of this gun's rounds: the next gun, as a player would
+      if (++dry >= GUNS.length) { // every gun dry: the arena's ammo cache, then back in
+        dry = 0; await hold(GUNS[0]); note('cache', await use(page, CACHE)); await walkTo(page, { x: 2, z: -88 }, 0.8, 15); continue;
+      }
       const at = GUNS.findIndex(gun => String(seen.held.id).endsWith(gun));
       note('switch', await hold(GUNS[(at + 1) % GUNS.length])); await sleep(1500); continue;
     }
+    if ((seen.held?.ammo ?? 0) > 0) dry = 0;
     if (seen.held?.ammo === 0) { await press(page, 'reload'); await sleep(2000); continue; }
     if (seen.hp <= 0) { await sleep(4000); continue; }
     await press(page, 'attack'); await sleep(750);
