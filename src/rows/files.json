@@ -1,6 +1,17 @@
 {
   "files": [
     {
+      "compressed": 69032,
+      "critical": false,
+      "decoded": 69004,
+      "dependencies": [],
+      "draws": 14,
+      "gpu": 63840,
+      "hash": "1265f3d51b78d5d3ee04115e0c5c4a6c5ba6171d8a523cce8cdc7e237b4c0c02",
+      "kind": "glb",
+      "triangles": 760
+    },
+    {
       "compressed": 731,
       "critical": false,
       "decoded": 731,
@@ -23,15 +34,26 @@
       "triangles": 532
     },
     {
-      "compressed": 42848,
+      "compressed": 60000,
       "critical": false,
-      "decoded": 42820,
+      "decoded": 59972,
       "dependencies": [],
-      "draws": 4,
-      "gpu": 40992,
-      "hash": "5821f33aa00e9acd2f4c0a29129978ee7006a879d163ce1463ae476031bfabcf",
+      "draws": 14,
+      "gpu": 54768,
+      "hash": "3642bce8cc63891c96762dc82890d36921fa68c73a0204a909cd786e54a03c24",
       "kind": "glb",
-      "triangles": 488
+      "triangles": 652
+    },
+    {
+      "compressed": 61332,
+      "critical": false,
+      "decoded": 61304,
+      "dependencies": [],
+      "draws": 14,
+      "gpu": 56112,
+      "hash": "7a5b84e480dc572f439378039be97db343d5bf9d2d848bbbf5f9593253861e8a",
+      "kind": "glb",
+      "triangles": 668
     },
     {
       "compressed": 574,
@@ -48,16 +70,18 @@
     }
   ],
   "library": [
+    "1265f3d51b78d5d3ee04115e0c5c4a6c5ba6171d8a523cce8cdc7e237b4c0c02",
     "24a4d4c1292677b1c984b5c0d3497ae2929528bf511df475f80cc20945bb08ec",
     "24f9098ec8408090fbb2b5ffb9febefc17f0e2866032166c706958f4e8a8bbe4",
-    "5821f33aa00e9acd2f4c0a29129978ee7006a879d163ce1463ae476031bfabcf",
+    "3642bce8cc63891c96762dc82890d36921fa68c73a0204a909cd786e54a03c24",
+    "7a5b84e480dc572f439378039be97db343d5bf9d2d848bbbf5f9593253861e8a",
     "eaca25036cc30b1cbece326d11b2ceceee1254d7fa72d4141984d16f992af6d5"
   ],
   "critical": [],
   "budgets": {
     "library": {
-      "compressed": 704306,
-      "resident": 26668769
+      "compressed": 851822,
+      "resident": 26949957
     },
     "sim": {
       "compressed": 0,

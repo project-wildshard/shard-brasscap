@@ -102,7 +102,7 @@
           "swapIcon": "⌐"
         },
         "view": {
-          "asset": "5821f33aa00e9acd2f4c0a29129978ee7006a879d163ce1463ae476031bfabcf",
+          "asset": "3642bce8cc63891c96762dc82890d36921fa68c73a0204a909cd786e54a03c24",
           "colour": "#8a5a2b",
           "position": [
             0.19,
@@ -200,6 +200,7 @@
           "swapIcon": "⌐"
         },
         "view": {
+          "asset": "7a5b84e480dc572f439378039be97db343d5bf9d2d848bbbf5f9593253861e8a",
           "colour": "#5a4a3a",
           "position": [
             0.19,
@@ -297,6 +298,7 @@
           "swapIcon": "⌐"
         },
         "view": {
+          "asset": "1265f3d51b78d5d3ee04115e0c5c4a6c5ba6171d8a523cce8cdc7e237b4c0c02",
           "colour": "#3d2b1f",
           "position": [
             0.19,

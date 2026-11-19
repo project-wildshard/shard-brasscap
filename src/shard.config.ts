@@ -41,9 +41,9 @@ import traversal from './rows/world/traversal.json' with { type: 'json' };
 import weather from './rows/world/weather.json' with { type: 'json' };
 import authored from './rows/files.json' with { type: 'json' };
 
-/** The subjects the authored rows name by hash (the lever rifle and the Dust Wyrm, with its skin file) and the sand ring's
+/** The subjects the authored rows name by hash (the three guns and the Dust Wyrm, with its skin file) and the sand ring's
  *  client script: authored bytes, not cooked. Their `files` rows are rows/files.json. */
-const SUBJECTS = ['sources/rifle.glb', 'sources/wyrm.glb', 'sources/wyrm.skin.json', 'assets/wasm/sand.wasm'] as const;
+const SUBJECTS = ['sources/rifle.glb', 'sources/scattergun.glb', 'sources/long-rifle.glb', 'sources/wyrm.glb', 'sources/wyrm.skin.json', 'assets/wasm/sand.wasm'] as const;
 
 /** QA43: a pitched props collider, since the scene's solid mesh helper lowers tilted boxes to their AABB. */
 function stairCollider(): NonNullable<Shardfile['props']>['colliders'][number] {

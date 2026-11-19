@@ -3,15 +3,14 @@ import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 import { describe, it } from 'node:test'
 
-import { buildRifle, MUZZLE, rifleTriangles } from './rifle.ts'
+import { buildGun, GUN_FILES, GUNS, rifleTriangles } from './rifle.ts'
 
-const COMMITTED = new URL(
-  '../src/sources/rifle.glb',
-  import.meta.url,
-)
+const ROOT = new URL('../', import.meta.url)
 const HEADER = 12
 const CHUNK_HEADER = 8
 const UNIT_SLACK = 1e-5
+/** The barrel's crown sits half a millimetre past the muzzle empty. */
+const CROWN = 1e-3
 /** A held item's share of a phone frame: well under one tile's prop budget. */
 const MAX_TRIANGLES = 1500
 const MAX_BYTES = 96 * 1024
@@ -61,28 +60,29 @@ function floats(json: Gltf, bin: Buffer, index: number): Float32Array {
   )
 }
 
-describe('the Brasscap lever-action generator (BM-3)', (): void => {
+for (const spec of GUNS)
+describe(`the Brasscap ${spec.id} generator (BM-3, QA 44)`, (): void => {
   it('writes the same bytes every run, and the committed GLB is its output', (): void => {
-    const first = buildRifle()
+    const first = buildGun(spec)
 
-    assert.ok(first.equals(buildRifle()), 'two runs differ')
+    assert.ok(first.equals(buildGun(spec)), 'two runs differ')
     assert.ok(
-      first.equals(readFileSync(COMMITTED)),
-      'src/sources/rifle.glb is stale: run node tools/rifle.ts',
+      first.equals(readFileSync(new URL(GUN_FILES[spec.id], ROOT))),
+      `${GUN_FILES[spec.id]} is stale: run node tools/rifle.ts`,
     )
   })
 
   it('stays a low-poly held item', (): void => {
-    assert.ok(buildRifle().length < MAX_BYTES)
+    assert.ok(buildGun(spec).length < MAX_BYTES)
     assert.ok(rifleTriangles() < MAX_TRIANGLES, `${rifleTriangles()}`)
   })
 
-  it('puts the muzzle empty at the forward tip of the rifle', (): void => {
-    const { json } = parse(buildRifle()),
+  it('puts the muzzle empty at the forward tip, and names the parts the hand animates', (): void => {
+    const { json } = parse(buildGun(spec)),
       muzzle = json.nodes.find(n => n.name === 'muzzle')
 
-    assert.deepEqual(muzzle?.translation, [...MUZZLE])
-    for (const name of ['grip', 'fore'])
+    assert.deepEqual(muzzle?.translation, [...spec.muzzle])
+    for (const name of ['grip', 'fore', 'frontSight', 'gate', 'lever', 'hammer', 'handRight', 'round'])
       assert.ok(
         json.nodes.some(n => n.name === name),
         name,
@@ -92,13 +92,13 @@ describe('the Brasscap lever-action generator (BM-3)', (): void => {
         p => json.accessors[p.attributes.POSITION]!.min![2]!,
       ),
     )
-    assert.ok(Math.abs(lowest - MUZZLE[2]) < 1e-6, `front is ${lowest}`)
+    assert.ok(Math.abs(lowest - spec.muzzle[2]) < CROWN, `front is ${lowest}`)
   })
 
   it('has unit normals that face out of each part', (): void => {
-    const { json, bin } = parse(buildRifle())
+    const { json, bin } = parse(buildGun(spec))
 
-    for (const p of json.meshes[0]!.primitives) {
+    for (const p of json.meshes.flatMap(m => m.primitives)) {
       const pos = floats(json, bin, p.attributes.POSITION),
         nor = floats(json, bin, p.attributes.NORMAL)
       for (let i = 0; i < nor.length; i += 3)
