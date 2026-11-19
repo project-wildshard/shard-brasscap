@@ -12,8 +12,9 @@ import { creatureGlb, creatureSkin } from '@wildshard/sharddev/scene/creature'
 
 import { BANDIT_BINDING, banditBody, banditClips } from '../src/generators/bandit.ts'
 
-/** Nine bandits on screen at once: each a fraction of one tile's prop budget (the BM-4 GLB's line). */
-const MAX_TRIANGLES = 400
+/** Nine bandits on screen at once: each a fraction of one tile's prop budget (the BM-4 GLB's line, raised for the
+ *  two-handed rifle and its arms, QA 11-19 row 42: content raises its own line, J438). */
+const MAX_TRIANGLES = 560
 const MAX_BYTES = 96 * 1024
 const UNIT_SLACK = 1e-5
 
@@ -63,11 +64,11 @@ describe('the Brasscap tin bandit from source (CC13)', (): void => {
     assert.ok(position.max![1]! > 1.4 && position.max![1]! < 1.5, `top at ${position.max![1]}`)
   })
 
-  it('is one skin on the kit biped bones, with its one-shot clips and no idle or walk to hide the gait', (): void => {
-    const { json } = compile(), expected = ['body', ...Object.values(CREATURE_SKELETONS.biped.chains).flatMap(chain => chain.bones)]
+  it('is one skin on the kit biped bones plus the rifle\'s grip, rifle and muzzle, with its loops and one-shots', (): void => {
+    const { json } = compile(), expected = ['body', 'grip', 'rifle', 'muzzle', ...Object.values(CREATURE_SKELETONS.biped.chains).flatMap(chain => chain.bones)]
     assert.equal(json.skins.length, 1)
     assert.deepEqual(json.skins[0]!.joints.map(j => json.nodes[j]!.name).toSorted(), expected.toSorted())
-    assert.deepEqual(json.animations.map(a => a.name).toSorted(), ['attack', 'die', 'hit'])
+    assert.deepEqual(json.animations.map(a => a.name).toSorted(), ['attack', 'attack.fire', 'die', 'hit', 'idle', 'walk'])
   })
 
   it("draws the eye as a second part, mapped to the look's glow", (): void => {
@@ -76,7 +77,7 @@ describe('the Brasscap tin bandit from source (CC13)', (): void => {
     assert.deepEqual(parts, ['Tin', 'Eye'])
     const skin = creatureSkin(rig, { id: 'brasscap.bandit', family: 'toon', binding: BANDIT_BINDING })
     assert.deepEqual(skin.binding['materials'], { Eye: 'glow' })
-    assert.deepEqual(skin.binding['loops'], [])
+    assert.deepEqual(skin.binding['loops'], ['idle', 'walk'])
   })
 
   it('has unit normals that agree with each triangle’s winding', (): void => {

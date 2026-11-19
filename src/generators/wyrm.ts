@@ -27,6 +27,8 @@ const FORWARD = new THREE.Vector3(0, 0, 1);
 const ALONG = new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 1, 0), FORWARD);
 /** The spike's roll before that turn, so the dorsal spikes stand up (+y) on the body lying along z. */
 const SPIKE_UP = new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 1, 0), new THREE.Vector3(0, 0, -1));
+/** The gullet's and the seams' colour (drawn in the look's glow). */
+const GLOW = '#ffb428';
 
 /** Trail bone `k` (0 the head): `head`, `seg<k>`, `tail`. */
 export function wyrmBone(k: number): string {
@@ -55,9 +57,19 @@ export function wyrmBody(): THREE.Group {
     const b = new Batch();
     wyrmSegment(b, WYRM_SEGMENTS - 1 - k, SEGMENT_LENGTH, ALONG, origin, FORWARD, SPIKE_UP);
     const mesh = b.mesh(plates); mesh.name = bone.name; bone.add(mesh);
+    // QA 11-19 row 44: a hot seam between this plate and the next, in the gullet's glow, so the body reads as plated
+    // armour over a burning inside (the plates take half; the open gullet is where rounds count)
+    if (k < WYRM_SEGMENTS - 1) { const seam = new THREE.Mesh(seamRing(wyrmRadius(WYRM_SEGMENTS - 1 - k)), gullet); seam.name = `${bone.name}.seam`; bone.add(seam); }
     if (k === 0) bone.add(maw(plates, gullet));
   }
   return root;
+}
+
+/** A glowing band round the body `r` metres out, at the back of a segment (where the next plate overlaps it). */
+function seamRing(r: number): THREE.BufferGeometry {
+  const ring = new THREE.CylinderGeometry(r * 0.98, r * 0.98, 0.16, 9, 1, true).toNonIndexed();
+  ring.deleteAttribute('uv'); ring.computeVertexNormals(); paint(ring, GLOW, 0);
+  return ring.applyQuaternion(ALONG).translate(0, 0, -SEGMENT_LENGTH * 0.5);
 }
 
 /** The maw bone on the head: the ring opening forward and the core inside it, the attack clip's one moving part. */
@@ -66,9 +78,14 @@ function maw(plates: THREE.Material, gullet: THREE.Material): THREE.Group {
   bone.name = 'maw';
   wyrmHead(b, ALONG, new THREE.Vector3());
   const ring = b.mesh(plates); ring.name = 'maw'; bone.add(ring);
-  const core = wyrmCore().toNonIndexed(); paint(core, '#ffb428', 0);
-  core.translate(0, 0, WYRM_CORE_IN);
+  // QA 11-19 row 44: the gullet is the target, so it burns: a core half again as big, and a hot ring of throat round it
+  const core = wyrmCore().toNonIndexed(); paint(core, GLOW, 0);
+  core.scale(1.5, 1.5, 1.5).translate(0, 0, WYRM_CORE_IN);
+  const throat = new THREE.TorusGeometry(WYRM_MAW * 0.62, 0.22, 4, 12).toNonIndexed();
+  throat.deleteAttribute('uv'); throat.computeVertexNormals(); paint(throat, GLOW, 0);
+  throat.translate(0, 0, WYRM_CORE_IN - 0.1);
   const glow = new THREE.Mesh(core, gullet); glow.name = 'gullet'; bone.add(glow);
+  const hot = new THREE.Mesh(throat, gullet); hot.name = 'throat'; bone.add(hot);
   return bone;
 }
 
@@ -120,13 +137,16 @@ export const WYRM_MOUND = { x: 2, z: -100 } as const;
 /**
  * ONE-FORMAT CC26: the Wyrm's moves (`actors/moves`), run by `behaviour/wyrm.as`: it burrows (the depth field to 1),
  * relocates to the point the decision writes under the nearest player, surfaces, leaps 9 m up onto the mound and turns
- * there to face the player (the leap lands facing away; the sweep and the spit strike ahead).
+ * there to face the player (the leap lands facing away; the sweep and the spit strike ahead). QA 11-19 row 44 (Jake:
+ * "it moves really slowly"): it burrows and surfaces in 0.4 s (from 0.5 s), the leap falls at 22 m/s² (about
+ * 1.8 s up and down, from 2.7 s), and the lunge is a 3 m hop at the nearest player before every tail sweep.
  */
 export const WYRM_MOVES = [
-  { id: 'brasscap.wyrm.burrow', kind: 'burrow', field: 'brasscap.wyrm-depth', rate: 2 },
+  { id: 'brasscap.wyrm.burrow', kind: 'burrow', field: 'brasscap.wyrm-depth', rate: 2.5 },
   { id: 'brasscap.wyrm.relocate', kind: 'relocate', point: { kind: 'fields', x: 'brasscap.wyrm-x', z: 'brasscap.wyrm-z' }, facing: 'target' },
-  { id: 'brasscap.wyrm.surface', kind: 'surface', field: 'brasscap.wyrm-depth', rate: 2 },
-  { id: 'brasscap.wyrm.leap', kind: 'leap', to: { kind: 'spot', spot: 'brasscap.wyrm.mound' }, height: 9 },
+  { id: 'brasscap.wyrm.surface', kind: 'surface', field: 'brasscap.wyrm-depth', rate: 2.5 },
+  { id: 'brasscap.wyrm.leap', kind: 'leap', to: { kind: 'spot', spot: 'brasscap.wyrm.mound' }, height: 9, gravity: 22 },
+  { id: 'brasscap.wyrm.lunge', kind: 'leap', to: { kind: 'target' }, height: 3, gravity: 30 },
   { id: 'brasscap.wyrm.face', kind: 'relocate', point: { kind: 'spot', spot: 'brasscap.wyrm.mound' }, facing: 'target' },
 ] as const;
 /** The leap's landing spot (a `world/targets` spot, `defineShard`'s `spots`): the mound's middle on the sand. */

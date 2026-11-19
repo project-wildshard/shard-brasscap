@@ -34,6 +34,7 @@
       "relocate": "brasscap.wyrm.relocate",
       "surface": "brasscap.wyrm.surface",
       "leap": "brasscap.wyrm.leap",
+      "lunge": "brasscap.wyrm.lunge",
       "face": "brasscap.wyrm.face"
     },
     "on": [
@@ -47,13 +48,14 @@
     "onFail": "reset",
     "pages": 1,
     "params": {
-      "firstBeat": 1.6,
-      "secondBeat": 1,
+      "firstBeat": 1,
+      "secondBeat": 0.7,
       "window": 3,
       "windup": 1.2,
       "moundX": 2,
       "moundZ": -100,
-      "reach": 4
+      "reach": 4,
+      "lungeReach": 8
     },
     "reads": [
       "nearestPlayer",

@@ -29,9 +29,20 @@ function underTarget(target:i32):void {
   const k=d>Params.reach?Params.reach/d:1.0;
   Do.field(Actor.boss,Field.aimX,Params.moundX+dx*k); Do.field(Actor.boss,Field.aimZ,Params.moundZ+dz*k);
 }
+// QA 11-19 row 44 (Jake: "it moves really slowly"): the tail sweep comes after a lunge, a low fast leap at where the
+// nearest player stands, so the Wyrm crosses the arena between bursts instead of sweeping where it last landed. Only at
+// a player within `lungeReach` of the mound: one standing back (12 m, TC-SHIP-d2) stays out of the sweep and shoots.
+function lunge():void {
+  const target=Read.nearestPlayer(Actor.boss);
+  if(target==0) { strike(Strike.sweep); return; }
+  const dx=Read.x(target)-Params.moundX, dz=Read.z(target)-Params.moundZ;
+  if(Math.sqrt(dx*dx+dz*dz)>Params.lungeReach) { strike(Strike.sweep); return; }
+  Do.field(0,Field.tell,1); Do.encounter(4,1);
+  Do.move(Actor.boss,Move.lunge,target);
+}
 function next():void {
   State.beat=(State.beat+1)%(State.phase==2?3:2);
-  if(State.beat==0) burst(); else if(State.beat==1) strike(Strike.sweep); else strike(Strike.spit);
+  if(State.beat==0) burst(); else if(State.beat==1) lunge(); else strike(Strike.spit);
 }
 // A phase change stops and restarts the decision, and a retry restarts it at its checkpoint: resume from its health.
 export function onStart():void {
@@ -51,7 +62,8 @@ export function onDeath(killer:i32):void {
   if(i32(Event.subject)!=Actor.boss || (State.phase!=1 && State.phase!=2)) return;
   Do.stop(Actor.boss); quiet(); State.phase=3; Do.encounterWin();
 }
-// The burst's moves, one after the other: under, across, up, the leap, a turn to the player, then the burst.
+// The burst's moves, one after the other: under, across, up, the leap, a turn to the player, then the burst. The
+// lunge ends in the sweep.
 export function onMoveDone(move:i32,ok:bool):void {
   if(i32(Event.subject)!=Actor.boss || (State.phase!=1 && State.phase!=2)) return;
   const target=Read.nearestPlayer(Actor.boss);
@@ -60,6 +72,7 @@ export function onMoveDone(move:i32,ok:bool):void {
   } else if(move==Move.relocate) Do.move(Actor.boss,Move.surface);
   else if(move==Move.surface) Do.move(Actor.boss,Move.leap);
   else if(move==Move.leap) { if(target!=0) Do.move(Actor.boss,Move.face,target); else Do.timer(Timer.open,Params.windup); }
+  else if(move==Move.lunge) strike(Strike.sweep);
   else if(move==Move.face) {
     if(target!=0) Do.strike(Actor.boss,Strike.burst,target);
     Do.timer(Timer.open,Params.windup);
