@@ -6,7 +6,7 @@
 import type { Shardfile } from '@wildshard/format/shardSchema';
 import type { GeneratedProject, ProjectGenerationContext } from '@wildshard/sharddev/projectGeneration';
 import { defineShard, type SceneShard } from '@wildshard/sharddev/scene/shard';
-import { buildBrasscap } from './generators/world';
+import { buildBrasscap, CAMP_STAIR } from './generators/world';
 import { sideDoorMover } from './generators/sideDoor';
 import { groundY } from './generators/terrain';
 import { WYRM_MOVES, wyrmSpots } from './generators/wyrm';
@@ -45,6 +45,19 @@ import authored from './rows/files.json' with { type: 'json' };
  *  client script: authored bytes, not cooked. Their `files` rows are rows/files.json. */
 const SUBJECTS = ['sources/rifle.glb', 'sources/wyrm.glb', 'sources/wyrm.skin.json', 'assets/wasm/sand.wasm'] as const;
 
+/** QA43: a pitched props collider, since the scene's solid mesh helper lowers tilted boxes to their AABB. */
+function stairCollider(): NonNullable<Shardfile['props']>['colliders'][number] {
+  const { x, halfWidth: hx, tread, steps, firstZ, landingY } = CAMP_STAIR;
+  const startZ = firstZ + tread / 2, endZ = firstZ - (steps - 1) * tread;
+  const startY = groundY(x, startZ), rise = landingY - startY, run = startZ - endZ;
+  const pitch = Math.atan2(rise, run), hy = 0.15;
+  return { id: 'brasscap.camp-stair', panel: null, initialActive: true, shapes: [
+    { kind: 'box', x, y: (startY + landingY) / 2 - hy * Math.cos(pitch), z: (startZ + endZ) / 2 - hy * Math.sin(pitch),
+      hx, hy, hz: Math.hypot(rise, run) / 2, rot: { x: Math.sin(pitch / 2), y: 0, z: 0, w: Math.cos(pitch / 2) }, surface: 'wood' },
+    { kind: 'box', x, y: landingY - hy, z: endZ - tread / 4, hx, hy, hz: tread / 4, surface: 'wood' },
+  ] };
+}
+
 /**
  * The gameplay rows over the scene's shardfile. The scene writes the look, ground, edge, spawn, props and colliders; the
  * data shard's look (but its `glow`), terrain, edge, spawn, water and navigation rows are the old canyon's and stay out. The rifle rack's
@@ -56,10 +69,11 @@ function gameplay(shard: Shardfile): Shardfile {
   const targets = { ...ui.targets, panels: ui.targets.panels.filter((row) => row.panel !== 'brasscap.rack.rifle'), talks: npcs.map((npc) => npc.talk) };
   const story = { quests: { ...quests.quests, dialogue: [...quests.quests.dialogue, ...npcs.map((npc) => npc.dialogue)] } };
   const library = shard.budgets.library;
+  if (shard.props === null) throw new Error('Brasscap requires its scene props');
   // the bandit's eye and the Wyrm's gullet glow: their skins bind look material `glow`, the data shard's emissive
   const families = shard.look.families.includes('emissive') ? shard.look.families : [...shard.look.families, 'emissive' as const];
   return {
-    ...shard,
+    ...shard, props: { ...shard.props, colliders: [...shard.props.colliders, stairCollider()] },
     look: { ...shard.look, families, materials: { ...shard.look.materials, glow: look.look.materials.glow } },
     ...creatures, ...crowds, ...audio, ...encounters, ...items, ...ledger, ...story, ...clientScripts, ...hooks, ...plumbing,
     ...sim, ...migrations, ...state, ...card, ...ui, targets, movers: [...movers.movers, sideDoorMover()], ...traversal,

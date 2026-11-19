@@ -20,8 +20,8 @@ const BUILT = resolve(ROOT, 'public/shardfiles/brasscap-mesa');
 export const PLAYER = 'actor.player';
 export const TICKS = 60;
 
-export async function product(): Promise<{ shard: Shardfile; assets: Map<string, Uint8Array>; sections: ReadonlyMap<string, unknown> }> {
-  const loaded = await loadHeadlessFolder(BUILT);
+export async function product(directory: string = BUILT): Promise<{ shard: Shardfile; assets: Map<string, Uint8Array>; sections: ReadonlyMap<string, unknown> }> {
+  const loaded = await loadHeadlessFolder(directory);
   const descriptor = outputDescriptor(loaded.shardfile);
   if (descriptor === undefined) throw new Error('brasscap-mesa has no output descriptor: run `pnpm check:shard` first');
   // the skin rigs too (engine `serverSkinRigs`): a body on a kit skeleton reads its rest rig from its GLB (CC13's bandits)
@@ -29,7 +29,7 @@ export async function product(): Promise<{ shard: Shardfile; assets: Map<string,
   const server = descriptor.index.files.filter(file => rigs.has(file.hash) || (serverReadsFile(file, loaded.shardfile.terrain?.collider)
     && (file.name === undefined || file.kind === 'wasm' || file.kind === 'tile')));
   const assets = new Map(server.map(file => [file.commons === true ? `commons:${file.hash}` : file.hash,
-    Uint8Array.from(readFileSync(resolve(BUILT, file.path)))]));
+    Uint8Array.from(readFileSync(resolve(directory, file.path)))]));
   // The product's sections carry its decisions, moves and targets, as the cell server reads them (engine `cellWorld.ts`):
   // without them the Wyrm runs no decision and falls back to its native chase.
   return { shard: loaded.shardfile, assets, sections: folderHeadlessSections(loaded) };
@@ -43,8 +43,8 @@ function physicsBytes(): Uint8Array {
 
 export interface Facts { readonly facts: string[]; readonly coins: number[] }
 /** The cell's server with every quest fact and coin payment it files kept in `facts`. */
-export async function brasscapSim(): Promise<{ shard: Shardfile; sim: ShardfileSimulation; filed: Facts; ports: ShardfileSimPorts; assets: Map<string, Uint8Array> }> {
-  const input = await product(), filed: Facts = { facts: [], coins: [] };
+export async function brasscapSim(directory?: string): Promise<{ shard: Shardfile; sim: ShardfileSimulation; filed: Facts; ports: ShardfileSimPorts; assets: Map<string, Uint8Array> }> {
+  const input = await product(directory), filed: Facts = { facts: [], coins: [] };
   const ports: ShardfileSimPorts = { rapier: await loadRapier(physicsBytes()), sections: input.sections,
     quest: { fact: (name: string) => { filed.facts.push(name); }, coins: (amount: number) => { filed.coins.push(amount); } } };
   return { shard: input.shard, sim: createShardfileSim(input.shard, input.assets, ports), filed, ports, assets: input.assets };

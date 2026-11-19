@@ -27,6 +27,7 @@ interface Box { x: number; y: number; z: number; hx: number; hy: number; hz: num
 /** The cleanroom's collider list, filled while a build runs (a fresh list per build: watch reruns it on every save). */
 let colliders: Box[] = [];
 const col = (x: number, y: number, z: number, hx: number, hy: number, hz: number): void => { colliders.push({ x, y, z, hx, hy, hz }); };
+export const CAMP_STAIR = { x: 9.3, halfWidth: 0.7, tread: 0.5, steps: 20, firstZ: -23.5, landingY: 6 } as const;
 
 // A stepped, strata-banded mesa block.
 const BANDS = [PAL.rockA, PAL.rockD, PAL.rockC, PAL.rockB, PAL.rockC, PAL.rockD, PAL.rockA];
@@ -389,22 +390,20 @@ function town(props: THREE.Group, dyn: THREE.Group, signs: THREE.Group, gate: TH
   fence(b, -7, -25, -4, -35); fence(b, -4, -35, -2.5, -40);
   b.add(box(1.2, 0.35, 0.35, PAL.woodDark, -15.6, 0.18, -27.2, 0.4)); b.add(box(1.2, 0.35, 0.35, PAL.woodDark, -12.5, 0.18, -26.5, -0.6));
   // ----- Camp 2 on the ledge (13.5, 6, -34) -----
-  const LY = 6;
+  const LY = CAMP_STAIR.landingY;
   dyn.add((() => { const g = tent(b, glowMat, 18.5, -38, -1.3, 1.0); g.position.y = LY; return g; })());
   // tent geometry was batched at y 0: lift the most recent tent parts
   liftLast(b, 5, LY);
   for (let z = -40; z <= -28; z += 1.7) b.add(box(0.12, 1.3, 1.6, PAL.wood, 10.9, LY + 0.65, z, 0, { vary: 0.2, rz: (hash(z, 1) - 0.5) * 0.15 }));
   b.add(box(0.12, 0.12, 12, PAL.woodDark, 10.95, LY + 1.05, -34));
   crate(b, 12.2, -39.5, LY, 0.8); barrel(b, 12.4, -37.6, LY); barrel(b, 12.3, -30.2, LY);
-  // TC-B2: a plank stair up the west face, rising south to north (-z) to the long rifle's counter. The old ladder was
-  // drawn only (the client has no ladder), so the ledge was out of reach. Each step rises 0.3 m, under the player's 0.35 m
-  // autostep, so a walk climbs it; each is solid from below the sand to its tread.
+  // TC-B2: plank treads up the west face to the long-rifle counter. QA43: one sloped solid carries the feet while the
+  // treads keep their visible shape. Match the sand at the foot and the ledge at the top tread's centre.
   {
-    const SX = 9.3, HALF_W = 0.7, RUN = 0.5, STEPS = 20, z0 = -23.5;
+    const { x: SX, halfWidth: HALF_W, tread: RUN, steps: STEPS, firstZ: z0 } = CAMP_STAIR;
     for (let k = 1; k <= STEPS; k++) {
       const z = z0 - (k - 1) * RUN, g = groundY(SX, z) - 0.5, top = (LY * k) / STEPS, h = top - g;
       b.add(box(HALF_W * 2, h, RUN + 0.02, k % 2 === 0 ? PAL.wood : PAL.woodDark, SX, g + h / 2, z, 0, { vary: 0.1, seed: 300 + k }));
-      col(SX, g + h / 2, z, HALF_W, h / 2, RUN / 2);
     }
     // a hand rail on the open (west) side, posts every fourth step
     for (let k = 4; k <= STEPS; k += 4) b.add(box(0.1, 1.0, 0.1, PAL.woodDark, SX - HALF_W + 0.05, (LY * k) / STEPS + 0.5, z0 - (k - 1) * RUN));

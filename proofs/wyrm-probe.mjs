@@ -9,12 +9,12 @@
 // (defeat) spots, with each page's frames per second.
 // J205: staging or preview only, never production. Headless and muted, 60 fps cap.
 //   node proofs/wyrm-probe.mjs <out dir> [--base=https://staging.wildshard.io] [--chunk=brasscap-mesa] [--seconds=900] [--census]
-// --census: enter, print what the page draws (every skinned or creature object, one line each, with its bones, where it
-// stands and its triangles), stop. Run 2 (2026-11-19) found no skinned mesh with `seg1` bones: the census showed the
+// --census: enter on one phone page and require every declared NPC figure to draw. Also print the creature meshes and bones.
+// Run 2 (2026-11-19) found no skinned mesh with `seg1` bones: the census showed the
 // Dust Wyrm drawn with the wyrmling's skin (body, neck, head, jaw; 532 triangles; both skins' rows are `brasscap.wyrm`)
 // because staging's loose `shardfiles/brasscap-mesa/shard.json` held an older revision than its index, and a grid page
 // never posed a serpent's trail bones (engine `5da116a0b` lays them from the wire rows).
-import { mkdirSync, writeFileSync } from 'node:fs';
+import { mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { chromium, webkit } from '../scripts/browser-playwright.mjs';
 import { saveFixture } from '@wildshard/engine/scripts/debug-settings.mjs';
@@ -23,7 +23,10 @@ const [outDir] = process.argv.slice(2).filter(arg => !arg.startsWith('--')).map(
 const flag = (name, fallback) => process.argv.find(arg => arg.startsWith(`--${name}=`))?.slice(name.length + 3) ?? fallback;
 if (outDir === undefined) throw new Error('usage: wyrm-probe.mjs <out dir> [--base=…] [--chunk=…]');
 const base = flag('base', 'https://staging.wildshard.io').replace(/\/$/u, '');
-if (!/^https:\/\/(staging|preview)\.wildshard\.io$/u.test(base)) throw new Error('--base takes staging or preview only (J205)');
+const censusOnly = process.argv.includes('--census');
+if (!/^https:\/\/(staging|preview)\.wildshard\.io$/u.test(base) && !(censusOnly && /^http:\/\/localhost:\d+$/u.test(base))) {
+  throw new Error('--base takes staging or preview, or localhost for the census (J205)');
+}
 const chunk = flag('chunk', 'brasscap-mesa'), budget = Number(flag('seconds', '900')) * 1000, started = Date.now();
 const KEYCHAIN = ['--use-mock-keychain', '--password-store=basic', '--mute-audio'];
 mkdirSync(outDir, { recursive: true });
@@ -43,8 +46,17 @@ const WYRM = 'brasscap.wyrm';
 
 /** A page in Brasscap: devMode on (the net client is readable), muted, 60 fps. */
 async function enter(browser, name, device) {
-  const context = await browser.newContext(device), page = await context.newPage(), errors = [];
+  const context = await browser.newContext(device), page = await context.newPage(), errors = [], assets = [];
   page.on('pageerror', error => { errors.push(error.message.slice(0, 240)); });
+  if (censusOnly) {
+    page.on('console', message => {
+      if (message.type() === 'error' || message.type() === 'warning') errors.push(message.text().slice(0, 240));
+    });
+    page.on('response', response => {
+      const { pathname } = new URL(response.url());
+      if (pathname.endsWith('.glb')) assets.push({ pathname, status: response.status() });
+    });
+  }
   await saveFixture(context, { scope: 'device', key: 'devMode', data: true });
   await saveFixture(context, { scope: 'global', key: 'settings', data: { music: false, sfx: false, volume: 0 }, merge: true });
   const t0 = Date.now();
@@ -66,7 +78,7 @@ async function enter(browser, name, device) {
   await page.waitForFunction(() => (window.__workerClient?.().frames ?? 0) > 30, undefined, { timeout: 90_000 });
   await page.getByText('DONE', { exact: true }).click({ timeout: 2000 }).catch(() => undefined);
   note(`${name} entered ${chunk}`, true, { ms: Date.now() - t0, cell: await page.evaluate(() => window.__workerClient().cell) });
-  return { name, page, context, errors, hits0: 0 };
+  return { name, page, context, errors, assets, hits0: 0 };
 }
 
 /** What a page is told and draws: its player (cell frame), its counters, the Wyrm's wire row and its drawn trail bones in
@@ -198,32 +210,59 @@ async function fireAt(who) {
   return true;
 }
 
-const cBrowser = await chromium.launch({ headless: true, args: [...KEYCHAIN, '--use-angle=metal', '--ignore-gpu-blocklist'] });
+/** Each declared figure must submit a mesh to the player's camera, not merely exist under a hidden group. */
+async function npcCensus(page) {
+  const directory = new URL('../src/rows/npcs/', import.meta.url);
+  const talks = readdirSync(directory).filter(file => file.endsWith('.json'))
+    .map(file => JSON.parse(readFileSync(new URL(file, directory), 'utf8')).npc.talk);
+  if (talks.length === 0) throw new Error('No Brasscap talk figures declared');
+  const reports = [];
+  for (const talk of talks) {
+    reports.push(await page.evaluate(async ({ id, figure, at }) => {
+      const { game, player } = window.__wildshard.world;
+      const key = name => name.replace(/[^a-z0-9]/giu, '').toLowerCase();
+      const names = new Set(figure === undefined ? [key(`talk:${id}`)] : [key(`scene.panel.${figure}`)]);
+      const meshes = new Set();
+      game.scene.traverse(root => {
+        if (names.has(key(root.name))) root.traverse(mesh => { if (mesh.isMesh) meshes.add(mesh); });
+      });
+      let draws = 0;
+      const hooks = new Map();
+      for (const mesh of meshes) {
+        const previous = mesh.onAfterRender;
+        hooks.set(mesh, previous);
+        mesh.onAfterRender = function (...args) {
+          previous.apply(this, args);
+          if (args[2] === game.camera) draws++;
+        };
+      }
+      const { yaw, pitch } = player;
+      try {
+        player.yaw = Math.atan2(player.position.x - at[0], player.position.z - at[2]);
+        player.pitch = Math.atan2(at[1] + 0.8 - game.camera.position.y, Math.max(0.1, Math.hypot(at[0] - player.position.x, at[2] - player.position.z)));
+        for (let frames = 0; meshes.size > 0 && draws === 0 && frames < 8; frames++) await new Promise(resolve => requestAnimationFrame(resolve));
+        return { id, figure, meshes: meshes.size, draws };
+      } finally {
+        player.yaw = yaw;
+        player.pitch = pitch;
+        for (const [mesh, previous] of hooks) mesh.onAfterRender = previous;
+      }
+    }, talk));
+  }
+  return reports;
+}
+
+const cBrowser = censusOnly ? null : await chromium.launch({ headless: true, args: [...KEYCHAIN, '--use-angle=metal', '--ignore-gpu-blocklist'] });
 const wBrowser = await webkit.launch({ headless: true });
 let ana, bo;
 const trailRows = [];
-try {
+async function proveFight() {
   [ana, bo] = await Promise.all([
     enter(cBrowser, 'Ana', { viewport: { width: 1280, height: 800 }, deviceScaleFactor: 1 }),
     enter(wBrowser, 'Bo', { viewport: { width: 402, height: 874 }, deviceScaleFactor: 1, hasTouch: true }),
   ]);
   const met = await look(ana.page);
   note('two players in Brasscap', true, { ana: met.me, wyrm: met.wyrm, held: met.held });
-  if (process.argv.includes('--census')) {
-    // what the page draws: every skinned or named creature object (one line each: two skins may share a row id), with its
-    // bones, where it stands and whether it is shown
-    console.log(JSON.stringify(await ana.page.evaluate(() => {
-      const rows = [];
-      window.__wildshard.world.game.scene.traverse(o => {
-        if (!o.isSkinnedMesh && !/creature|wyrm|serpent/iu.test(o.name)) return;
-        rows.push({ name: `${o.type}:${o.name}`, bones: o.skeleton?.bones.map(b => b.name) ?? null, parent: o.parent?.name ?? null, visible: o.visible,
-          at: [o.position.x, o.position.y, o.position.z].map(n => Math.round(n * 10) / 10),
-          triangles: o.geometry === undefined ? null : (o.geometry.index?.count ?? o.geometry.getAttribute('position').count) / 3 });
-      });
-      return rows;
-    })));
-    throw new Error('census only');
-  }
   // the rack's rounds, camp 3's ammo box and strongbox, the lever, the side door, the pit's edge
   await Promise.all([ana, bo].map(async who => {
     who.rack = await use(who, RACK);
@@ -264,12 +303,32 @@ try {
   verdicts.hits = note('both players land hits on the Wyrm', landed.Ana > 0 && landed.Bo > 0, { landed, wyrm: b.wyrm, fights: b.fights });
   verdicts.weak = note('the Wyrm goes weak (half hp)', weak, { hp0 });
   verdicts.defeat = note('the Wyrm goes down', down, b.wyrm);
+}
+try {
+  if (censusOnly) {
+    bo = await enter(wBrowser, 'Bo', { viewport: { width: 402, height: 874 }, deviceScaleFactor: 1, hasTouch: true });
+    const figures = await npcCensus(bo.page);
+    verdicts.npcs = note('all declared NPC figures draw', figures.every(row => row.draws > 0), figures);
+    const creatures = await bo.page.evaluate(() => {
+      const rows = [];
+      window.__wildshard.world.game.scene.traverse(o => {
+        if (!o.isSkinnedMesh && !/creature|wyrm|serpent/iu.test(o.name)) return;
+        rows.push({ name: `${o.type}:${o.name}`, bones: o.skeleton?.bones.map(b => b.name) ?? null, parent: o.parent?.name ?? null, visible: o.visible,
+          at: [o.position.x, o.position.y, o.position.z].map(n => Math.round(n * 10) / 10),
+          triangles: o.geometry === undefined ? null : (o.geometry.index?.count ?? o.geometry.getAttribute('position').count) / 3 });
+      });
+      return rows;
+    });
+    writeFileSync(resolve(outDir, 'census.json'), `${JSON.stringify({ figures, creatures, assets: bo.assets }, null, 1)}\n`);
+  } else {
+    await proveFight();
+  }
 } catch (error) {
   verdicts.threw = note('probe threw', false, String(error?.stack ?? error).slice(0, 800));
 } finally {
   const errors = { ana: ana?.errors ?? [], bo: bo?.errors ?? [] };
   writeFileSync(resolve(outDir, 'probe.json'), `${JSON.stringify({ base, chunk, verdicts, trails: trailRows, shots, log, errors }, null, 1)}\n`);
-  await cBrowser.close(); await wBrowser.close();
+  await cBrowser?.close(); await wBrowser.close();
 }
 console.log(JSON.stringify(verdicts));
 process.exitCode = Object.values(verdicts).every(Boolean) ? 0 : 1;
