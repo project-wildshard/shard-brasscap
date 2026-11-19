@@ -31,7 +31,7 @@ mkdirSync(out, { recursive: true });
 
 /** Brasscap's cell on the grid catalogue, its card, and its places in the shard's own frame. */
 const CELL = flag('cell', 'blender-template'), CARD = flag('card', 'Brasscap Mesa'), SLUG = flag('slug', 'brasscap-mesa');
-/** `--porch=x,z` and `--spawn=x,z` move the two reference points for another shard (the Template: `--slug=_template --cell=template-2`). */
+/** `--porch=x,z` and `--spawn=x,z` move the two reference points for another shard (with its `--slug=` and `--cell=`). */
 const xz = (text) => { const [x, z] = text.split(',').map(Number); return { x, z }; };
 const PORCH = xz(flag('porch', '-2.2,-0.92')), SPAWN = xz(flag('spawn', '-1.6,2.6'));
 /** `--fields=<row>,<row>`: wire rows read on every report (a boss's tell and core fields). */
