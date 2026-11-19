@@ -9,8 +9,11 @@
 // (defeat) spots, with each page's frames per second.
 // J205: staging or preview only, never production. Headless and muted, 60 fps cap.
 //   node proofs/wyrm-probe.mjs <out dir> [--base=https://staging.wildshard.io] [--chunk=brasscap-mesa] [--seconds=900] [--census]
-// --census: enter, print what the page draws (skinned and creature objects, with bones), stop. Run 2 (2026-11-19) found
-// no skinned mesh with `seg1` bones, so the trail read is still open: find how the Wyrm is drawn, then fix `look`.
+// --census: enter, print what the page draws (every skinned or creature object, one line each, with its bones, where it
+// stands and its triangles), stop. Run 2 (2026-11-19) found no skinned mesh with `seg1` bones: the census showed the
+// Dust Wyrm drawn with the wyrmling's skin (body, neck, head, jaw; 532 triangles; both skins' rows are `brasscap.wyrm`)
+// because staging's loose `shardfiles/brasscap-mesa/shard.json` held an older revision than its index, and a grid page
+// never posed a serpent's trail bones (engine `5da116a0b` lays them from the wire rows).
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { chromium, webkit } from '../scripts/browser-playwright.mjs';
@@ -207,16 +210,17 @@ try {
   const met = await look(ana.page);
   note('two players in Brasscap', true, { ana: met.me, wyrm: met.wyrm, held: met.held });
   if (process.argv.includes('--census')) {
-    // what the page draws: every skinned or named creature object, once a name, with its bones
+    // what the page draws: every skinned or named creature object (one line each: two skins may share a row id), with its
+    // bones, where it stands and whether it is shown
     console.log(JSON.stringify(await ana.page.evaluate(() => {
-      const seen = {};
+      const rows = [];
       window.__wildshard.world.game.scene.traverse(o => {
-        const name = `${o.type}:${o.name}`;
         if (!o.isSkinnedMesh && !/creature|wyrm|serpent/iu.test(o.name)) return;
-        if (seen[name] !== undefined) { seen[name].count++; return; }
-        seen[name] = { count: 1, bones: o.skeleton?.bones.map(b => b.name) ?? null, parent: o.parent?.name ?? null, visible: o.visible };
+        rows.push({ name: `${o.type}:${o.name}`, bones: o.skeleton?.bones.map(b => b.name) ?? null, parent: o.parent?.name ?? null, visible: o.visible,
+          at: [o.position.x, o.position.y, o.position.z].map(n => Math.round(n * 10) / 10),
+          triangles: o.geometry === undefined ? null : (o.geometry.index?.count ?? o.geometry.getAttribute('position').count) / 3 });
       });
-      return seen;
+      return rows;
     })));
     throw new Error('census only');
   }
