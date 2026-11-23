@@ -36,7 +36,7 @@ export async function product(directory: string = BUILT): Promise<{ shard: Shard
 
 function physicsBytes(): Uint8Array {
   // The engine's own Rapier, found through the sdk (SHARD-COMPAT SI8b): the sdk's `engineRequire` resolves from the
-  // engine this shard pins, so the test never names `@wildshard/engine` or its folder.
+  // engine this shard pins, so the test never names the engine package or its folder.
   return Uint8Array.from(readFileSync(engineRequire.resolve('@dimforge/rapier3d-simd/rapier_wasm3d_bg.wasm')));
 }
 
