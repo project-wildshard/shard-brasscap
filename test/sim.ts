@@ -1,12 +1,11 @@
 // The built Brasscap cell's server, headless: the folder `wildshard check .` builds, loaded into the pinned engine's
 // simulation with its shipped Rapier. The sim tests (`pnpm test:shard`) share it.
 // oxlint-disable-next-line import/no-nodejs-modules -- The tests read the built product and the shipped physics bytes.
-import { readFileSync, realpathSync } from 'node:fs';
-// oxlint-disable-next-line import/no-nodejs-modules -- Resolve the physics package beside the engine.
-import { createRequire } from 'node:module';
+import { readFileSync } from 'node:fs';
 // oxlint-disable-next-line import/no-nodejs-modules -- Resolve the built folder from the repo root.
 import { resolve } from 'node:path';
 import { Vector3 } from 'three';
+import { engineRequire } from '@wildshard/sdk/headless';
 import { loadRapier } from '@wildshard/sdk/headless/physics/rapier';
 import { outputDescriptor, serverReadsFile } from '@wildshard/sdk/headless/game/shardfile/outputDescriptor';
 import { serverSkinRigs } from '@wildshard/sdk/internal/engine/game/shardfile/serverSkinRigs';
@@ -36,9 +35,9 @@ export async function product(directory: string = BUILT): Promise<{ shard: Shard
 }
 
 function physicsBytes(): Uint8Array {
-  // The engine's own Rapier (pnpm links it beside the engine, not into this repo's node_modules).
-  const require = createRequire(resolve(realpathSync(resolve(ROOT, 'node_modules/@wildshard/engine')), 'package.json'));
-  return Uint8Array.from(readFileSync(require.resolve('@dimforge/rapier3d-simd/rapier_wasm3d_bg.wasm')));
+  // The engine's own Rapier, found through the sdk (SHARD-COMPAT SI8b): the sdk's `engineRequire` resolves from the
+  // engine this shard pins, so the test never names `@wildshard/engine` or its folder.
+  return Uint8Array.from(readFileSync(engineRequire.resolve('@dimforge/rapier3d-simd/rapier_wasm3d_bg.wasm')));
 }
 
 export interface Facts { readonly facts: string[]; readonly coins: number[] }
