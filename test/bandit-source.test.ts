@@ -8,7 +8,7 @@ import { before, describe, it } from 'node:test'
 import { CREATURE_SKELETONS } from '@wildshard/format/creatureSkeletons'
 import { glbBuffers, prepareGlbBuffers } from '@wildshard/format/glbBuffers'
 import { parseGlbData } from '@wildshard/format/glbCost'
-import { creatureGlb, creatureSkin } from '@wildshard/sharddev/scene/creature'
+import { creatureGlb, creatureSkin } from '@wildshard/sdk/scene/creature'
 
 import { BANDIT_BINDING, banditBody, banditClips } from '../src/generators/bandit.ts'
 

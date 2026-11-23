@@ -6,7 +6,7 @@ settings:
 
 overrides:
   '@wildshard/engine': 0.1.65-next.9c91846e
-  '@wildshard/sharddev': npm:@wildshard/sdk@0.4.25
+  '@wildshard/sdk': 0.4.25
   binaryen: npm:@pre-bundled/binaryen@132.0.0-patch-1
   assemblyscript>binaryen: npm:@pre-bundled/binaryen@131.0.0-nightly.20260721-patch-1
   '@wildshard/format': npm:@wildshard/shard-format@0.66.0
@@ -30,9 +30,6 @@ importers:
       '@wildshard/sdk':
         specifier: 0.4.25
         version: 0.4.25(@types/node@24.3.1)(three@0.186.0)(typescript@6.0.3)
-      '@wildshard/sharddev':
-        specifier: npm:@wildshard/sdk@0.4.25
-        version: '@wildshard/sdk@0.4.25(@types/node@24.3.1)(three@0.186.0)(typescript@6.0.3)'
       three:
         specifier: 0.186.0
         version: 0.186.0
@@ -713,7 +710,7 @@ packages:
   '@wildshard/kit@0.4.25':
     resolution: {integrity: sha512-ewdFzJ8PqZ/AR0sdmpWI0I4U972c754WfH4nY1LoM3KyfKYuZjsJhE4inzpR7qYCT+7QP2mw3Zygk+3ydg8DNg==}
     peerDependencies:
-      '@wildshard/sdk': ^0.3.2 || ^0.4.0
+      '@wildshard/sdk': 0.4.25
 
   '@wildshard/sdk@0.4.25':
     resolution: {integrity: sha512-TeHQl+97ePMJI544S27c2bi5pyFLBlmGLupa+jwNlStt5N6XA+xiqYgsrwfjel4mZQY3WedV4kbeKuZilF9NmA==}

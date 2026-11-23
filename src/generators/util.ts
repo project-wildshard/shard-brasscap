@@ -4,7 +4,7 @@
 // cleanroom draws halos only on its lean phone tier; the engine's bloom takes the glow).
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
-import { paintCanvas } from '@wildshard/sharddev/scene/canvas';
+import { paintCanvas } from '@wildshard/sdk/scene/canvas';
 
 /** Deterministic hash + value noise; every build is the same scene. */
 export function hash(x: number, y = 0, z = 0): number {

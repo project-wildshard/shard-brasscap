@@ -8,8 +8,8 @@
 // the look's glow). Built in world metres under one unnamed 1/5 node: the giant class (4) at body scale 1/4 on a spawn of
 // 5 lays it back at 1:1. Bones rest unrotated along -z, the head facing +z.
 import * as THREE from 'three';
-import type { ShardWorld } from '@wildshard/sharddev/scene/author';
-import type { CreatureBinding } from '@wildshard/sharddev/scene/creature';
+import type { ShardWorld } from '@wildshard/sdk/scene/author';
+import type { CreatureBinding } from '@wildshard/sdk/scene/creature';
 import wyrmRows from '../rows/actors/wyrm.json' with { type: 'json' };
 import { WYRM_CORE_IN, WYRM_MAW, WYRM_SEGMENTS, wyrmCore, wyrmHead, wyrmRadius, wyrmSegment } from './actors';
 import { Batch, paint } from './util';

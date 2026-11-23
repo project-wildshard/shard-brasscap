@@ -15,7 +15,7 @@
     "lint:fix": "node kit/scripts/lint.mjs --type-aware --fix --ignore-pattern '.githooks/**' --ignore-pattern '.agents/**' --ignore-pattern 'scripts/agent-parity.mjs' --ignore-pattern 'scripts/agent-sync.mjs' --ignore-pattern 'tmp/**' --ignore-pattern 'src/**' --ignore-pattern 'test/**' --ignore-pattern 'public/**' --ignore-pattern 'scripts/**' --ignore-pattern 'src/**' --ignore-pattern 'tools/**'",
     "format": "npr oxfmt -c kit/.oxfmtrc.json kit '!src/**' '!test/**' '!tools/**' '!.oxlintrc.author.json'",
     "format:check": "npr oxfmt -c kit/.oxfmtrc.json --check kit '!src/**' '!test/**' '!tools/**' '!.oxlintrc.author.json'",
-    "test": "node --import ./node_modules/@wildshard/sharddev/src/sharddev/bake/format-hook.mjs --test 'tools/*.test.ts'",
+    "test": "node --import ./node_modules/@wildshard/sdk/src/sharddev/bake/format-hook.mjs --test 'tools/*.test.ts'",
     "check:asks": "node kit/scripts/asks.mjs check",
     "check:agents": "node .githooks/agents-md.mjs lint",
     "check:parity": "node scripts/agent-parity.mjs --strict",
@@ -34,7 +34,6 @@
   },
   "dependencies": {
     "@wildshard/format": "npm:@wildshard/shard-format@0.66.0",
-    "@wildshard/sharddev": "npm:@wildshard/sdk@0.4.25",
     "three": "0.186.0",
     "@wildshard/cli": "0.4.25",
     "@wildshard/sdk": "0.4.25",
@@ -134,7 +133,7 @@
     ],
     "overrides": {
       "@wildshard/engine": "0.1.65-next.9c91846e",
-      "@wildshard/sharddev": "npm:@wildshard/sdk@0.4.25",
+      "@wildshard/sdk": "0.4.25",
       "binaryen": "npm:@pre-bundled/binaryen@132.0.0-patch-1",
       "assemblyscript>binaryen": "npm:@pre-bundled/binaryen@131.0.0-nightly.20260721-patch-1",
       "@wildshard/format": "npm:@wildshard/shard-format@0.66.0",

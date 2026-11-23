@@ -7,7 +7,7 @@ out of shard-format's `corpus/brasscap-mesa/`. One shard, at `src/`
 ## Commands
 
 - `pnpm install --frozen-lockfile` installs the pinned sdk
-  (`@wildshard/sharddev` is `@wildshard/sdk`), engine, shard-format
+  (`@wildshard/sdk` is `@wildshard/sdk`), engine, shard-format
   and three, and turns on `.githooks/`.
 - `pnpm check` runs the repo's checks: types, kit lint and format,
   the generator tests, asks, AGENTS.md, agent parity and the hook

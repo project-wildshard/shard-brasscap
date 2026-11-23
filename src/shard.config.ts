@@ -4,8 +4,8 @@
 // skin files the tools/ generators write into sources/; the tin bandit is a `world.creature` (generators/bandit.ts).
 // `wildshard build` runs `generate`; `wildshard watch` reads its describe() and streams the scene's parts to a page.
 import type { Shardfile } from '@wildshard/format/shardSchema';
-import type { GeneratedProject, ProjectGenerationContext } from '@wildshard/sharddev/projectGeneration';
-import { defineShard, type SceneShard } from '@wildshard/sharddev/scene/shard';
+import type { GeneratedProject, ProjectGenerationContext } from '@wildshard/sdk/projectGeneration';
+import { defineShard, type SceneShard } from '@wildshard/sdk/scene/shard';
 import { buildBrasscap, CAMP_STAIR } from './generators/world';
 import { sideDoorMover } from './generators/sideDoor';
 import { groundY } from './generators/terrain';

@@ -3,8 +3,8 @@
 // low-poly mesh, unlit and unfogged.
 import * as THREE from 'three';
 import { dot, max, mix, normalize, pow, smoothstep, vec3 } from 'three/tsl';
-import { skyRay } from '@wildshard/sharddev/scene/author';
-import type { GraphValue } from '@wildshard/sharddev/materials';
+import { skyRay } from '@wildshard/sdk/scene/author';
+import type { GraphValue } from '@wildshard/sdk/materials';
 import { Batch, facet, place, rand, rr, seed } from './util';
 
 /** The cleanroom's palette (world.js PAL). */

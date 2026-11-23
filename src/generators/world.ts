@@ -14,7 +14,7 @@
 //   `targets.panels` row hides both once the gate opens, as the data shard's `gate.door` node did;
 // - the viewmodel, AO bake and lamp bake are the cleanroom's own runtime and lean path, not world.
 import * as THREE from 'three';
-import { animate, flicker, solid, type ShardWorld } from '@wildshard/sharddev/scene/author';
+import { animate, flicker, solid, type ShardWorld } from '@wildshard/sdk/scene/author';
 import { cowboy } from './actors';
 import { banditCreatures } from './bandit';
 import { wyrmCreature } from './wyrm';

@@ -12,8 +12,8 @@
 // Cleanroom units (legs 0.85 m, hat top 2.42 m) under one unnamed 0.6 scale node: the bandit stands 1.45 m, as the
 // species' hit dims and the old GLB had it. Bones rest unrotated; the arms' bend is the meshes' rest shape.
 import * as THREE from 'three';
-import type { ShardWorld } from '@wildshard/sharddev/scene/author';
-import type { CreatureBinding } from '@wildshard/sharddev/scene/creature';
+import type { ShardWorld } from '@wildshard/sdk/scene/author';
+import type { CreatureBinding } from '@wildshard/sdk/scene/creature';
 import bandits from '../rows/actors/bandits.json' with { type: 'json' };
 import { box, cyl, place } from './util';
 
