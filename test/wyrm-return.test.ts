@@ -2,9 +2,9 @@
 import { test } from 'node:test';
 // oxlint-disable-next-line import/no-nodejs-modules -- Plain assertions, no test framework dependency.
 import assert from 'node:assert/strict';
-import { admittedTerrain } from '@wildshard/engine/game/plugin/simulation';
-import { actRoutes } from '@wildshard/engine/sim/actRoutes';
-import { encounterRows } from '@wildshard/engine/sim/encounterRows';
+import { admittedTerrain } from '@wildshard/sdk/internal/engine/game/plugin/simulation';
+import { actRoutes } from '@wildshard/sdk/internal/engine/sim/actRoutes';
+import { encounterRows } from '@wildshard/sdk/internal/engine/sim/encounterRows';
 import { brasscapSim, kill, PLAYER, TICKS } from './sim.ts';
 
 // TEMPLATE-E2E TC-B14 (meta TEMPLATE-E2E-PLAN): the Wyrm wakes after the gate opens, wherever the player was. The player

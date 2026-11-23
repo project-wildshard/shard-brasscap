@@ -2,10 +2,10 @@
 import { test } from 'node:test';
 // oxlint-disable-next-line import/no-nodejs-modules -- Plain assertions, no test framework dependency.
 import assert from 'node:assert/strict';
-import { bindShardfileSim, type ShardfileSimulation } from '@wildshard/engine/game/plugin/simulation';
-import { actRoutes } from '@wildshard/engine/sim/actRoutes';
-import { restoreSimHost } from '@wildshard/engine/sim/restore';
-import { snapshotSimHost } from '@wildshard/engine/sim/snapshot';
+import { bindShardfileSim, type ShardfileSimulation } from '@wildshard/sdk/internal/engine/game/plugin/simulation';
+import { actRoutes } from '@wildshard/sdk/internal/engine/sim/actRoutes';
+import { restoreSimHost } from '@wildshard/sdk/internal/engine/sim/restore';
+import { snapshotSimHost } from '@wildshard/sdk/headless/sim/snapshot';
 import { brasscapSim, kill, killWhenOpen, PLAYER, TICKS } from './sim.ts';
 
 // TEMPLATE-E2E TC-B8 (meta TEMPLATE-E2E-PLAN, J361): Brasscap Mesa's quest, start to end, on the built cell's server. The

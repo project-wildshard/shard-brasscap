@@ -17,7 +17,7 @@
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { chromium, webkit } from '../../scripts/browser-playwright.mjs';
-import { saveFixture } from '@wildshard/engine/scripts/debug-settings.mjs';
+import { saveFixture } from '@wildshard/sdk/headless/scripts/debug-settings.mjs';
 
 const flag = (name, fallback) => process.argv.find((arg) => arg.startsWith(`--${name}=`))?.slice(name.length + 3) ?? fallback;
 const base = (process.argv.includes('--staging') ? 'https://staging.wildshard.io' : flag('base', 'http://127.0.0.1:5173')).replace(/\/$/u, '');

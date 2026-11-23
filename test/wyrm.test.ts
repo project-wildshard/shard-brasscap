@@ -3,8 +3,8 @@ import { test } from 'node:test';
 // oxlint-disable-next-line import/no-nodejs-modules -- Plain assertions, no test framework dependency.
 import assert from 'node:assert/strict';
 import { Vector3 } from 'three';
-import { actRoutes } from '@wildshard/engine/sim/actRoutes';
-import { encounterRows } from '@wildshard/engine/sim/encounterRows';
+import { actRoutes } from '@wildshard/sdk/internal/engine/sim/actRoutes';
+import { encounterRows } from '@wildshard/sdk/internal/engine/sim/encounterRows';
 import { brasscapSim, kill, killWhenOpen, PLAYER, TICKS } from './sim.ts';
 
 // TEMPLATE-E2E TC-B5 (meta TEMPLATE-E2E-PLAN, J361): the Dust Wyrm at the bar. On the built cell's server a player who

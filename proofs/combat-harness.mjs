@@ -4,7 +4,7 @@
 import { mkdirSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { webkit } from '../scripts/browser-playwright.mjs';
-import { saveFixture } from '@wildshard/engine/scripts/debug-settings.mjs';
+import { saveFixture } from '@wildshard/sdk/headless/scripts/debug-settings.mjs';
 
 export const sleep = ms => new Promise(done => { setTimeout(done, ms); });
 export const PHONE = { viewport: { width: 402, height: 874 }, deviceScaleFactor: 1, hasTouch: true };

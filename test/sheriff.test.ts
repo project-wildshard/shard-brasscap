@@ -2,8 +2,8 @@
 import { test } from 'node:test';
 // oxlint-disable-next-line import/no-nodejs-modules -- Plain assertions, no test framework dependency.
 import assert from 'node:assert/strict';
-import { actRoutes } from '@wildshard/engine/sim/actRoutes';
-import { shardRows } from '@wildshard/engine/sim/shardRows';
+import { actRoutes } from '@wildshard/sdk/internal/engine/sim/actRoutes';
+import { shardRows } from '@wildshard/sdk/internal/engine/sim/shardRows';
 import { brasscapSim, kill, killWhenOpen, PLAYER } from './sim.ts';
 
 // TEMPLATE-E2E TC-B6 (meta TEMPLATE-E2E-PLAN, J361): Sheriff Brass gives the quest and his lines follow it. On the built

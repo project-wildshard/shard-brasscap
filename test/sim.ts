@@ -7,12 +7,12 @@ import { createRequire } from 'node:module';
 // oxlint-disable-next-line import/no-nodejs-modules -- Resolve the built folder from the repo root.
 import { resolve } from 'node:path';
 import { Vector3 } from 'three';
-import { loadRapier } from '@wildshard/engine/physics/rapier';
-import { outputDescriptor, serverReadsFile } from '@wildshard/engine/game/shardfile/outputDescriptor';
-import { serverSkinRigs } from '@wildshard/engine/game/shardfile/serverSkinRigs';
-import { createShardfileSim, type ShardfileSimPorts, type ShardfileSimulation } from '@wildshard/engine/game/plugin/simulation';
-import { loadHeadlessFolder } from '@wildshard/engine/host/headlessFolder';
-import { folderHeadlessSections } from '@wildshard/engine/host/headlessSections';
+import { loadRapier } from '@wildshard/sdk/headless/physics/rapier';
+import { outputDescriptor, serverReadsFile } from '@wildshard/sdk/headless/game/shardfile/outputDescriptor';
+import { serverSkinRigs } from '@wildshard/sdk/internal/engine/game/shardfile/serverSkinRigs';
+import { createShardfileSim, type ShardfileSimPorts, type ShardfileSimulation } from '@wildshard/sdk/internal/engine/game/plugin/simulation';
+import { loadHeadlessFolder } from '@wildshard/sdk/headless/host/headlessFolder';
+import { folderHeadlessSections } from '@wildshard/sdk/headless/host/headlessSections';
 import type { Shardfile } from '@wildshard/format/shardSchema';
 
 const ROOT = resolve(import.meta.dirname, '..');

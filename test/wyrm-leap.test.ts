@@ -2,7 +2,7 @@
 import { test } from 'node:test';
 // oxlint-disable-next-line import/no-nodejs-modules -- Plain assertions, no test framework dependency.
 import assert from 'node:assert/strict';
-import { actRoutes } from '@wildshard/engine/sim/actRoutes';
+import { actRoutes } from '@wildshard/sdk/internal/engine/sim/actRoutes';
 import { brasscapSim, PLAYER, TICKS } from './sim.ts';
 
 // ONE-FORMAT CC26: the burst is the serpent's own moves. The Wyrm burrows, comes up under the player (held 8 m off the

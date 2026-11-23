@@ -17,7 +17,7 @@
 import { mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { chromium, webkit } from '../scripts/browser-playwright.mjs';
-import { saveFixture } from '@wildshard/engine/scripts/debug-settings.mjs';
+import { saveFixture } from '@wildshard/sdk/headless/scripts/debug-settings.mjs';
 
 const [outDir] = process.argv.slice(2).filter(arg => !arg.startsWith('--')).map(path => resolve(path));
 const flag = (name, fallback) => process.argv.find(arg => arg.startsWith(`--${name}=`))?.slice(name.length + 3) ?? fallback;
