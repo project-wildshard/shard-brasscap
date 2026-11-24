@@ -90,6 +90,7 @@
     "overlap": 0
   },
   "serverBudget": {
+    "awakeMicros": 1311,
     "commandsPerTick": 32,
     "entities": 100,
     "memory": 17258340,
