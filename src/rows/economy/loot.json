@@ -9,6 +9,12 @@
         "id": "brasscap.loot",
         "marks": null,
         "economy": {
+          "currency": {
+            "id": "coin",
+            "name": "Coin",
+            "model": "shared/doubloon",
+            "icon": "coin"
+          },
           "effects": [],
           "goods": [],
           "grants": {
