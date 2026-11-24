@@ -60,7 +60,7 @@
   "api": 1,
   "slug": "brasscap-mesa",
   "order": 9,
-  "status": "hidden",
+  "status": "earlyAccess",
   "name": "Brasscap Mesa",
   "label": "(+1, -1)",
   "seed": 1,

@@ -151,7 +151,7 @@
     },
     "spawns": [],
     "species": [],
-    "status": "hidden",
+    "status": "earlyAccess",
     "style": "greybox",
     "tiers": {
       "desktop": {

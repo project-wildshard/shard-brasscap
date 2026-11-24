@@ -1,11 +1,11 @@
 {
-  "content": "0f8596aa3499751606e32cbbda480f2e45e443e37a0d160409fa048fcc5cd59b",
-  "captured": "2026-11-23T20:37:29.337Z",
-  "base": "http://127.0.0.1:53663",
+  "content": "428b015a59b0c5e1172a783e5103da065406ec024bd169663b43650a0d95325f",
+  "captured": "2026-11-24T01:44:43.635Z",
+  "base": "http://127.0.0.1:4793",
   "card": {
-    "thumbs/brasscap-mesa.jpg": "6876dd82202cea447d61c3e3ff3b920508d670cdeb1a256d1f5606ac49009deb",
-    "thumbs/brasscap-mesa-portrait.jpg": "b87c2138acad85855f01854936ad35846a702ade0a187d31da7105abb5a63732",
-    "thumbs/brasscap-mesa-landscape.jpg": "1e8b1b30633a209a77749d382a3fb2834960d6675854f5e9c36476a258164fe5"
+    "thumbs/brasscap-mesa.jpg": "12ce848ef3a649f14ca1ba4b065a6f8b2e8ef8e9a3ff3a0b158b776e8c697231",
+    "thumbs/brasscap-mesa-portrait.jpg": "827ad43db4e05bbb10ba144f5b8b45400c6dd30b4ccc3387a54c6a97cfa81f89",
+    "thumbs/brasscap-mesa-landscape.jpg": "ec26086da4b778a8f9afe7199e93cfc77ebf136bf394e7865a882a8963afa229"
   },
-  "look": "81889521056d5376f1433fcf4408b4035a66781540d3bd6a116c1f26eed58d89"
+  "look": "999b3c7a22ff7b2330f37cbba037251816340491b7c5e4418a55239b0cdcbd1f"
 }
