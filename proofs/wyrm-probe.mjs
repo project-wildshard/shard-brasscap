@@ -16,7 +16,7 @@
 // never posed a serpent's trail bones (engine `5da116a0b` lays them from the wire rows).
 import { mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
-import { chromium, webkit } from '../scripts/browser-playwright.mjs';
+import { chromium, webkit } from '../src/scripts/browser-playwright.mjs';
 import { saveFixture } from '@wildshard/sdk/headless/scripts/debug-settings.mjs';
 
 const [outDir] = process.argv.slice(2).filter(arg => !arg.startsWith('--')).map(path => resolve(path));

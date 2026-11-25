@@ -3,7 +3,7 @@
 // J205: staging or preview, or a localhost `pnpm dev` world. Never production.
 import { mkdirSync } from 'node:fs';
 import { resolve } from 'node:path';
-import { webkit } from '../scripts/browser-playwright.mjs';
+import { webkit } from '../src/scripts/browser-playwright.mjs';
 import { saveFixture } from '@wildshard/sdk/headless/scripts/debug-settings.mjs';
 
 export const sleep = ms => new Promise(done => { setTimeout(done, ms); });
