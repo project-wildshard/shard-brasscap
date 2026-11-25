@@ -26,3 +26,6 @@ Step 2, the move itself (repo-kit `scripts/lean-move.mjs`):
   that also runs the kit's tests, the hooks' tests and the agent
   hooks' tests.
 - tsconfig.lint.json is gone, and so is `--tsconfig` on the shard lint
+
+Step 3: `agent-sync --from` on the lean layout re-points the kit skills
+at `src/scripts/.kit/`.
