@@ -16,7 +16,7 @@ import { folderHeadlessSections } from '@wildshard/sdk/headless/host/headlessSec
 import type { Shardfile } from '@wildshard/format/shardSchema';
 
 const ROOT = resolve(import.meta.dirname, '..');
-const BUILT = resolve(ROOT, 'public/shardfiles/brasscap-mesa');
+const BUILT = resolve(ROOT, 'out/brasscap-mesa');
 export const PLAYER = 'actor.player';
 export const TICKS = 60;
 
