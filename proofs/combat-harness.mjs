@@ -5,6 +5,7 @@ import { mkdirSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { webkit } from '../src/scripts/browser-playwright.mjs';
 import { saveFixture } from '@wildshard/sdk/headless/scripts/debug-settings.mjs';
+import { enterZone } from '@wildshard/sdk/headless/scripts/zone-entry.mjs'; // CHUNK-PARAM-REMOVAL CP20 (J522): no zone in any address
 
 export const sleep = ms => new Promise(done => { setTimeout(done, ms); });
 export const PHONE = { viewport: { width: 402, height: 874 }, deviceScaleFactor: 1, hasTouch: true };
@@ -19,7 +20,7 @@ export function checkBase(base) {
 }
 
 /** A recording phone page in Brasscap. `video` is the folder the clip lands in. */
-export async function enterPhone({ base, chunk = 'brasscap-mesa', video, name = 'Bo' }) {
+export async function enterPhone({ base, zone = 'brasscap-mesa', video, name = 'Bo' }) {
   mkdirSync(video, { recursive: true });
   const browser = await webkit.launch({ headless: true });
   const context = await browser.newContext({ ...PHONE, recordVideo: { dir: video, size: PHONE.viewport } });
@@ -27,7 +28,7 @@ export async function enterPhone({ base, chunk = 'brasscap-mesa', video, name = 
   page.on('pageerror', error => { errors.push(error.message.slice(0, 240)); });
   await saveFixture(context, { scope: 'device', key: 'devMode', data: true });
   await saveFixture(context, { scope: 'global', key: 'settings', data: { music: false, sfx: false, volume: 0 }, merge: true });
-  await page.goto(`${base}/?chunk=${chunk}&mute=1&nolock=1&skipintro=1&fps=60`, { waitUntil: 'load', timeout: 120_000 });
+  await enterZone(page, { zone, base, flags: 'mute=1&nolock=1&skipintro=1&fps=60', timeout: 120_000 });
   for (const ends = Date.now() + 150_000; Date.now() < ends;) {
     if (await page.locator('#ws-name-field').isVisible().catch(() => false)) break;
     const clicked = await page.evaluate(() => {

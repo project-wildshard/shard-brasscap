@@ -1,12 +1,12 @@
 #!/usr/bin/env node
 // TEMPLATE-E2E TC-B0 (J357): Brasscap's play probe. One headless, muted Chromium page enters Brasscap Mesa the two ways a
-// player does, by its Shard Select card and by the grid road into its cell (-1, -1) (and `--entry=chunk`, the one-shard page), and prints JSON: where the player
+// player does, by its Shard Select card and by the grid road into its cell (-1, -1) (and `--entry=tap`, the Zone Select tap straight into it), and prints JSON: where the player
 // stands (and how far from the depot porch and its rifle rack), the held item and its rounds, the hotbar, the creatures
 // alive within 60 m with their hp and brain (the regional world's), the creature bodies the page draws (`bodies`: a grid
 // cell's skinned meshes, shown and in the camera's view, by look), the quest step, the flags and the coins. Steps (`--do`) then act on the world
 // by real input (keys and the mouse) and read again after each, so a content row's done-when is one line of this JSON.
 //
-//   node src/scripts/.kit/play-probe.mjs [--staging | --base=<url>] [--entry=select|road|slug|chunk|both] [--layout=desktop|phone]
+//   node src/scripts/.kit/play-probe.mjs [--staging | --base=<url>] [--entry=select|road|slug|tap|both] [--layout=desktop|phone]
 //     [--do=<step>,<step>...] [--out=<dir>] [--seconds=<budget>] [--browser=chromium|webkit]
 //
 // Steps: `gun:<species>@<h>@<range>@<leash>@<s>` (fire at a wire row until it dies), `pack:<species>@<reach>@<s>@<count>@<leash>` (hunt a roaming pack until this player holds <count> of its `dead:` flags), `watch:<species>@<s>` (the wire brain state of the nearest one), `device` (the identity and save databases), `refresh` (the same tab again), `reopen` (a new tab), `wait:<s>`, `find:<name>` (drawn objects by name, with world positions), `face:<x>,<z>[,<y>]` (and pitch to height y), `shot:<name>` (a screenshot), `fire[:<n>]` (left click n times, one cycle apart), `reload`, `slot:<n>` (press digit n), `use` (E),
@@ -18,6 +18,7 @@ import { mkdirSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { chromium, webkit } from '../browser-playwright.mjs';
 import { saveFixture } from '@wildshard/sdk/headless/scripts/debug-settings.mjs';
+import { enterZone } from '@wildshard/sdk/headless/scripts/zone-entry.mjs'; // CHUNK-PARAM-REMOVAL CP20 (J522): no zone in any address
 
 const flag = (name, fallback) => process.argv.find((arg) => arg.startsWith(`--${name}=`))?.slice(name.length + 3) ?? fallback;
 const base = (process.argv.includes('--staging') ? 'https://staging.wildshard.io' : flag('base', 'http://127.0.0.1:5173')).replace(/\/$/u, '');
@@ -113,8 +114,11 @@ function read({ porch, spawn, fields = [] }) {
 }
 
 async function enter(page, how) {
-  await page.goto(`${base}/?mute=1&nolock=1${how === 'chunk' ? `&skipintro&chunk=${CELL}` : ''}`, { waitUntil: 'load', timeout: 120_000 });
-  if (how === 'chunk') return await ready(page, Date.now());
+  if (how === 'tap') {
+    await enterZone(page, { zone: CELL, base, flags: 'mute=1&nolock=1&skipintro', timeout: 120_000 });
+    return await ready(page, Date.now());
+  }
+  await page.goto(`${base}/?mute=1&nolock=1`, { waitUntil: 'load', timeout: 120_000 });
   if (how === 'slug') return await slugIn(page);
   await page.locator('.ws-main-select').waitFor({ state: 'visible', timeout: 120_000 });
   const dismiss = page.locator('#wsdrop .dismiss'); if (await dismiss.count() > 0) await dismiss.click();

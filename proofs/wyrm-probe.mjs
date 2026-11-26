@@ -8,7 +8,7 @@
 // defeated; both must land hits. Shots from both pages at the cleanroom's t2-14 (emerge), t2-15 (weak) and t2-16
 // (defeat) spots, with each page's frames per second.
 // J205: staging or preview only, never production. Headless and muted, 60 fps cap.
-//   node proofs/wyrm-probe.mjs <out dir> [--base=https://staging.wildshard.io] [--chunk=brasscap-mesa] [--seconds=900] [--census]
+//   node proofs/wyrm-probe.mjs <out dir> [--base=https://staging.wildshard.io] [--zone=brasscap-mesa] [--seconds=900] [--census]
 // --census: enter on one phone page and require every declared NPC figure to draw. Also print the creature meshes and bones.
 // Run 2 (2026-11-19) found no skinned mesh with `seg1` bones: the census showed the
 // Dust Wyrm drawn with the wyrmling's skin (body, neck, head, jaw; 532 triangles; both skins' rows are `brasscap.wyrm`)
@@ -18,16 +18,17 @@ import { mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { chromium, webkit } from '../src/scripts/browser-playwright.mjs';
 import { saveFixture } from '@wildshard/sdk/headless/scripts/debug-settings.mjs';
+import { enterZone } from '@wildshard/sdk/headless/scripts/zone-entry.mjs'; // CHUNK-PARAM-REMOVAL CP20 (J522): no zone in any address
 
 const [outDir] = process.argv.slice(2).filter(arg => !arg.startsWith('--')).map(path => resolve(path));
 const flag = (name, fallback) => process.argv.find(arg => arg.startsWith(`--${name}=`))?.slice(name.length + 3) ?? fallback;
-if (outDir === undefined) throw new Error('usage: wyrm-probe.mjs <out dir> [--base=…] [--chunk=…]');
+if (outDir === undefined) throw new Error('usage: wyrm-probe.mjs <out dir> [--base=…] [--zone=…]');
 const base = flag('base', 'https://staging.wildshard.io').replace(/\/$/u, '');
 const censusOnly = process.argv.includes('--census');
 if (!/^https:\/\/(staging|preview)\.wildshard\.io$/u.test(base) && !(censusOnly && /^http:\/\/localhost:\d+$/u.test(base))) {
   throw new Error('--base takes staging or preview, or localhost for the census (J205)');
 }
-const chunk = flag('chunk', 'brasscap-mesa'), budget = Number(flag('seconds', '900')) * 1000, started = Date.now();
+const zone = flag('zone', 'brasscap-mesa'), budget = Number(flag('seconds', '900')) * 1000, started = Date.now();
 const KEYCHAIN = ['--use-mock-keychain', '--password-store=basic', '--mute-audio'];
 mkdirSync(outDir, { recursive: true });
 
@@ -60,7 +61,7 @@ async function enter(browser, name, device) {
   await saveFixture(context, { scope: 'device', key: 'devMode', data: true });
   await saveFixture(context, { scope: 'global', key: 'settings', data: { music: false, sfx: false, volume: 0 }, merge: true });
   const t0 = Date.now();
-  await page.goto(`${base}/?chunk=${chunk}&mute=1&nolock=1&skipintro=1&fps=60`, { waitUntil: 'load', timeout: 120_000 });
+  await enterZone(page, { zone, base, flags: 'mute=1&nolock=1&skipintro=1&fps=60', timeout: 120_000 });
   for (const ends = Date.now() + 150_000; Date.now() < ends;) {
     if (await page.locator('#ws-name-field').isVisible().catch(() => false)) break;
     const clicked = await page.evaluate(() => {
@@ -77,7 +78,7 @@ async function enter(browser, name, device) {
   await page.evaluate(() => window.__wildshard?.world?.hud?.enterNow?.());
   await page.waitForFunction(() => (window.__workerClient?.().frames ?? 0) > 30, undefined, { timeout: 90_000 });
   await page.getByText('DONE', { exact: true }).click({ timeout: 2000 }).catch(() => undefined);
-  note(`${name} entered ${chunk}`, true, { ms: Date.now() - t0, cell: await page.evaluate(() => window.__workerClient().cell) });
+  note(`${name} entered ${zone}`, true, { ms: Date.now() - t0, cell: await page.evaluate(() => window.__workerClient().cell) });
   return { name, page, context, errors, assets, hits0: 0 };
 }
 
@@ -327,7 +328,7 @@ try {
   verdicts.threw = note('probe threw', false, String(error?.stack ?? error).slice(0, 800));
 } finally {
   const errors = { ana: ana?.errors ?? [], bo: bo?.errors ?? [] };
-  writeFileSync(resolve(outDir, 'probe.json'), `${JSON.stringify({ base, chunk, verdicts, trails: trailRows, shots, log, errors }, null, 1)}\n`);
+  writeFileSync(resolve(outDir, 'probe.json'), `${JSON.stringify({ base, zone, verdicts, trails: trailRows, shots, log, errors }, null, 1)}\n`);
   await cBrowser?.close(); await wBrowser.close();
 }
 console.log(JSON.stringify(verdicts));
