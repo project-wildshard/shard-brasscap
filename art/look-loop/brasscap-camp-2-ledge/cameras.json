@@ -1,6 +1,7 @@
 {
   "about": "Brasscap Mesa (shardfile corpus/brasscap-mesa) look loop, zone Camp 2, the ledge dome (LF2-2, meta TEMPLATE-E2E-PLAN LF-T2). P: the ledge top where its stair arrives (the `ledge` empty, 6 m up), looking back up the canyon toward the depot. Camera 1 is the golden target t2-09-camp-2-fp-fight.jpg (art/targets/brasscap/), a fight shot, so this P is not frozen for the bandits: camp 2's stand 6 to 11 m away and rush it; LF2-8 shoots the fight from play. Freeze otherwise as the other zones: look.json pins dayOverride 0.4, clear weather, animals calmed, the Wyrm held. Cameras filled in by views.mjs; every later round re-shoots exactly these. groundY is set to the ledge top (6 m) by hand: views.mjs reads ground from the heightfield, which has no ledge, so its god cameras would look at the floor under it. Its FP cameras stand the player through the same pose, so until a pose stands on colliders, the ledge FP shots come from play (LF2-8).",
-  "query": "chunk=brasscap-mesa&mute=1&skipintro=1&nolock=1&sw=0",
+  "zone": "brasscap-mesa",
+  "query": "mute=1&skipintro=1&nolock=1&sw=0",
   "settings": {
     "weather": "clear"
   },
